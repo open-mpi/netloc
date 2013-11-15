@@ -1,0 +1,122 @@
+/* -*- c++ -*-
+ * Copyright © 2013 Cisco Systems, Inc.  All rights reserved.
+ *
+ * See COPYING in top-level directory.
+ */
+
+#ifndef NETLOC_CONFIG_H
+#define NETLOC_CONFIG_H
+
+/*
+ * Note: this is public.  We can not assume anything from the compiler used
+ * by the application and thus the NETLOC_HAVE_* macros below are not
+ * fetched from the autoconf result here. We only automatically use a few
+ * well-known easy cases.
+ */
+
+/* Some handy constants to make the logic below a little more readable */
+#if defined(__cplusplus) && \
+    (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR >= 4))
+#define GXX_ABOVE_3_4 1
+#else
+#define GXX_ABOVE_3_4 0
+#endif
+
+#if !defined(__cplusplus) && \
+    (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95))
+#define GCC_ABOVE_2_95 1
+#else
+#define GCC_ABOVE_2_95 0
+#endif
+
+#if !defined(__cplusplus) && \
+    (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96))
+#define GCC_ABOVE_2_96 1
+#else
+#define GCC_ABOVE_2_96 0
+#endif
+
+#if !defined(__cplusplus) && \
+    (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
+#define GCC_ABOVE_3_3 1
+#else
+#define GCC_ABOVE_3_3 0
+#endif
+
+// Maybe before gcc 2.95 too
+#ifdef NETLOC_HAVE_ATTRIBUTE_UNUSED
+#define __NETLOC_HAVE_ATTRIBUTE_UNUSED NETLOC_HAVE_ATTRIBUTE_UNUSED 
+#elif defined(__GNUC__)
+# define __NETLOC_HAVE_ATTRIBUTE_UNUSED (GXX_ABOVE_3_4 || GCC_ABOVE_2_95)
+#else
+# define __NETLOC_HAVE_ATTRIBUTE_UNUSED 0
+#endif
+#if __NETLOC_HAVE_ATTRIBUTE_UNUSED
+# define __netloc_attribute_unused __attribute__((__unused__))
+#else
+# define __netloc_attribute_unused
+#endif
+
+#ifdef NETLOC_HAVE_ATTRIBUTE_MALLOC
+#define __NETLOC_HAVE_ATTRIBUTE_MALLOC NETLOC_HAVE_ATTRIBUTE_MALLOC 
+#elif defined(__GNUC__)
+# define __NETLOC_HAVE_ATTRIBUTE_MALLOC (GXX_ABOVE_3_4 || GCC_ABOVE_2_96)
+#else
+# define __NETLOC_HAVE_ATTRIBUTE_MALLOC 0
+#endif
+#if __NETLOC_HAVE_ATTRIBUTE_MALLOC
+# define __netloc_attribute_malloc __attribute__((__malloc__))
+#else
+# define __netloc_attribute_malloc
+#endif
+
+#ifdef NETLOC_HAVE_ATTRIBUTE_CONST
+#define __NETLOC_HAVE_ATTRIBUTE_CONST NETLOC_HAVE_ATTRIBUTE_CONST 
+#elif defined(__GNUC__)
+# define __NETLOC_HAVE_ATTRIBUTE_CONST (GXX_ABOVE_3_4 || GCC_ABOVE_2_95)
+#else
+# define __NETLOC_HAVE_ATTRIBUTE_CONST 0
+#endif
+#if __NETLOC_HAVE_ATTRIBUTE_CONST
+# define __netloc_attribute_const __attribute__((__const__))
+#else
+# define __netloc_attribute_const
+#endif
+
+#ifdef NETLOC_HAVE_ATTRIBUTE_PURE
+#define __NETLOC_HAVE_ATTRIBUTE_PURE NETLOC_HAVE_ATTRIBUTE_PURE 
+#elif defined(__GNUC__)
+# define __NETLOC_HAVE_ATTRIBUTE_PURE (GXX_ABOVE_3_4 || GCC_ABOVE_2_96)
+#else
+# define __NETLOC_HAVE_ATTRIBUTE_PURE 0
+#endif
+#if __NETLOC_HAVE_ATTRIBUTE_PURE
+# define __netloc_attribute_pure __attribute__((__pure__))
+#else
+# define __netloc_attribute_pure
+#endif
+
+#ifdef NETLOC_HAVE_ATTRIBUTE_DEPRECATED
+#define __NETLOC_HAVE_ATTRIBUTE_DEPRECATED NETLOC_HAVE_ATTRIBUTE_DEPRECATED 
+#elif defined(__GNUC__)
+# define __NETLOC_HAVE_ATTRIBUTE_DEPRECATED (GXX_ABOVE_3_4 || GCC_ABOVE_3_3)
+#else
+# define __NETLOC_HAVE_ATTRIBUTE_DEPRECATED 0
+#endif
+#if __NETLOC_HAVE_ATTRIBUTE_DEPRECATED
+# define __netloc_attribute_deprecated __attribute__((__deprecated__))
+#else
+# define __netloc_attribute_deprecated
+#endif
+
+#ifdef NETLOC_C_HAVE_VISIBILITY
+# if NETLOC_C_HAVE_VISIBILITY
+#  define NETLOC_DECLSPEC __attribute__((__visibility__("default")))
+# else
+#  define NETLOC_DECLSPEC
+# endif
+#else
+# define NETLOC_DECLSPEC
+#endif
+
+#endif /* NETLOC_CONFIG_H */

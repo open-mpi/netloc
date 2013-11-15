@@ -1,0 +1,99 @@
+Copyright (c) 2013      University of Wisconsin-La Crosse.
+                        All rights reserved.
+Copyright (c) 2013      Cisco Systems, Inc.  All rights reserved.
+
+$COPYRIGHT$
+
+See COPYING in top-level directory.
+Additional copyrights may follow
+
+$HEADER$
+
+ 
+===========================================================================
+
+Building netloc
+---------------
+
+The typical installation follows the following pattern:
+
+--------------------------------------
+shell$ ./configure [options...]
+shell$ make
+shell$ make install
+--------------------------------------
+
+There are a few configuration options available. See ./configure --help for
+a complete list.
+
+Common Configuration Options
+
+ --prefix=<directory>
+   Install netloc into the base directory specified.
+
+Required Support Libraries
+
+ --with-jansson=<directory>
+   Installation directory of the Jansson JSON parsing library.
+   http://www.digip.org/jansson/
+
+ ----with-hwloc=<directory>
+   Installation directory of the hwloc library.
+   http://www.open-mpi.org/projects/hwloc/
+
+
+===========================================================================
+
+Using netloc
+------------
+
+The netloc model separates network topology discovery mechanism from the
+mechanism for querying that data via the netloc API.
+
+
+Using netloc: Discovering the network topology
+----------------------------------------------
+
+The netloc reader tools provide the functionality to discover the network
+topology for various types of networks. Below is a list and brief description
+of the readers currently available in this release of netloc. Further
+information about each of these tools can be found in their documentation.
+
+ - netloc_reader_ib
+   Reader for InfiniBand network data.
+
+ - netloc_reader_of
+   Reader for Ethernet network data managed by an OpenFlow controller.
+   Controllers currently supported:
+     - OpenDaylight
+       http://www.opendaylight.org/
+     - Floodlight
+       http://www.projectfloodlight.org/floodlight/
+
+
+Using netloc: Query API
+-----------------------
+
+The user-facing API is defined in the following header files:
+  - include/netloc.h
+  - include/netloc_map.h
+
+
+===========================================================================
+
+Unit Tests
+----------
+
+A small number of unit tests and testing data have been made available
+as part of this distribution. To compile these tests use the following
+command:
+
+-------------------
+shell$ make check
+-------------------
+
+The tests can be run from the tests directory without any command line
+parameters.
+
+
+===========================================================================
