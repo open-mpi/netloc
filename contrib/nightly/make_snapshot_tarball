@@ -214,7 +214,7 @@ rm -f VERSION.new
 do_command "./autogen.sh"
 
 # do config
-do_command "./configure"
+do_command "./configure" $NETLOC_CONFIGURE_FLAGS
 
 # Do make distcheck (which will invoke config/distscript.csh to set
 # the right values in VERSION).  distcheck does many things; we need
