@@ -37,7 +37,7 @@ Required Support Libraries
    Installation directory of the Jansson JSON parsing library.
    http://www.digip.org/jansson/
 
- ----with-hwloc=<directory>
+ --with-hwloc=<directory>
    Installation directory of the hwloc library.
    http://www.open-mpi.org/projects/hwloc/
 
