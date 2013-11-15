@@ -227,6 +227,8 @@ struct netloc_lookup_table_entry_t {
     const char *key;
     /** Value pointer */
     void *value;
+    /** Hash key */
+    unsigned long __key__;
 };
 typedef struct netloc_lookup_table_entry_t netloc_lookup_table_entry_t;
 
@@ -362,9 +364,13 @@ struct netloc_node_t {
 
     /** Physical ID of the node (must be unique) */
     char *          physical_id;
+    unsigned long   physical_id_int;
 
     /** Logical ID of the node (if any) */
     char *          logical_id;
+
+    /** Internal unique ID: 0 - N */
+    int __uid__;
 
     /** Subnet ID */
     char * subnet_id;
@@ -683,6 +689,52 @@ NETLOC_DECLSPEC netloc_dt_lookup_table_t * netloc_dt_node_t_json_decode_paths(ne
 NETLOC_DECLSPEC int netloc_dt_node_t_compare(netloc_node_t *a, netloc_node_t *b);
 
 
+/**
+ * Convert a string MAC address (':' separated) into a whole number value
+ *
+ * \param mac String MAC address
+ *
+ * Returns
+ *  whole number encoding of that value
+ */
+NETLOC_DECLSPEC unsigned long netloc_dt_convert_mac_str_to_int(const char * mac);
+
+/**
+ * Convert a value encoding a MAC address into a string representation (':' separated)
+ *
+ * Caller is responsible for free'ing the pointer returned.
+ *
+ * \param valu encoded value MAC address
+ *
+ * Returns
+ *  NULL on error
+ *  otherwise string representation.
+ */
+NETLOC_DECLSPEC char * netloc_dt_convert_mac_int_to_str(const unsigned long value);
+
+/**
+ * Convert a string GUID address (':' separated) into a whole number value
+ *
+ * \param guid String GUID address
+ *
+ * Returns
+ *  whole number encoding of that value
+ */
+NETLOC_DECLSPEC unsigned long netloc_dt_convert_guid_str_to_int(const char * guid);
+
+/**
+ * Convert a value encoding a GUID address into a string representation (':' separated)
+ *
+ * Caller is responsible for free'ing the pointer returned.
+ *
+ * \param valu encoded value GUID address
+ *
+ * Returns
+ *  NULL on error
+ *  otherwise string representation.
+ */
+NETLOC_DECLSPEC char * netloc_dt_convert_guid_int_to_str(const unsigned long value);
+
 
 /**********************************************************************
  * Datatype Support Functions for Lookup Tables
@@ -820,7 +872,7 @@ static inline int netloc_lookup_table_size(netloc_dt_lookup_table_t *table) {
 
 /**
  * Append an entry to the hash table
- *
+ * 
  * \param ht A valid pointer to a lookup table
  * \param key The key used to find the data
  * \param value The pointer to associate with this key
@@ -828,8 +880,27 @@ static inline int netloc_lookup_table_size(netloc_dt_lookup_table_t *table) {
  * Returns
  *   NETLOC_SUCCESS on success
  *   NETLOC_ERROR on error
- */
+*/
 NETLOC_DECLSPEC int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, void *value);
+
+/**
+ * Append an entry to the hash table while specifying the integer key to use
+ * (instead of calculating it)
+ *
+ * Warning: This interface is only used internally at the moment.
+ * Warning: In order for this interface to work, you must use all of the
+ *          *_with_int() methods when interacting with this loopup table.
+ * 
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ * \param key_int The unique integer key used to find the data
+ * \param value The pointer to associate with this key
+ *
+ * Returns
+ *   NETLOC_SUCCESS on success
+ *   NETLOC_ERROR on error
+ */
+NETLOC_DECLSPEC int netloc_lookup_table_append_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value);
 
 /**
  * Access an entry in the hash table
@@ -843,6 +914,85 @@ NETLOC_DECLSPEC int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, con
  */
 NETLOC_DECLSPEC void * netloc_lookup_table_access(netloc_dt_lookup_table_t *ht, const char *key);
 
+/**
+ * Access an entry to the hash table while specifying the integer key to use
+ * (instead of calculating it)
+ *
+ * Warning: This interface is only used internally at the moment.
+ * Warning: In order for this interface to work, you must use all of the
+ *          *_with_int() methods when interacting with this loopup table.
+ * 
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ * \param key_int The unique integer key used to find the data
+ *
+ * Returns
+ *   NULL if nothing found
+ *   The pointer stored from a prior call to netloc_lookup_table_append
+ */
+NETLOC_DECLSPEC void * netloc_lookup_table_access_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int);
+
+/**
+ * Replace an entry in the hash table with the provided value
+ *
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ * \param value The pointer to associate with this key
+ *
+ * Returns
+ *   NETLOC_SUCCESS on success
+ *   NETLOC_ERROR on error
+ */
+NETLOC_DECLSPEC int netloc_lookup_table_replace(netloc_dt_lookup_table_t *ht, const char *key, void *value);
+
+/**
+ * Replace an entry in the hash table with the provided value
+ * while specifying the integer key to use (instead of calculating it)
+ *
+ * Warning: This interface is only used internally at the moment.
+ * Warning: In order for this interface to work, you must use all of the
+ *          *_with_int() methods when interacting with this loopup table.
+ * 
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ * \param key_int The unique integer key used to find the data
+ * \param value The pointer to associate with this key
+ *
+ * Returns
+ *   NETLOC_SUCCESS on success
+ *   NETLOC_ERROR on error
+ */
+NETLOC_DECLSPEC int netloc_lookup_table_replace_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value);
+
+/**
+ * Remove an entry from the hash table.
+ *
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ *
+ * Returns
+ *   NETLOC_SUCCESS on success
+ *   NETLOC_ERROR on error
+ */
+NETLOC_DECLSPEC int netloc_lookup_table_remove(netloc_dt_lookup_table_t *ht, const char *key);
+
+/**
+ * Remove an entry from the hash table.
+ * while specifying the integer key to use (instead of calculating it)
+ *
+ * Warning: This interface is only used internally at the moment.
+ * Warning: In order for this interface to work, you must use all of the
+ *          *_with_int() methods when interacting with this loopup table.
+ * 
+ * \param ht A valid pointer to a lookup table
+ * \param key The key used to find the data
+ * \param key_int The unique integer key used to find the data
+ *
+ * Returns
+ *   NETLOC_SUCCESS on success
+ *   NETLOC_ERROR on error
+ */
+NETLOC_DECLSPEC int netloc_lookup_table_remove_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int);
 
 /**
  * Pretty print the lookup table to stdout (Debugging Support)
@@ -863,6 +1013,16 @@ NETLOC_DECLSPEC void netloc_lookup_table_pretty_print(netloc_dt_lookup_table_t *
  *   A newly allocated string copy of the key.
  */
 NETLOC_DECLSPEC const char * netloc_lookup_table_iterator_next_key(netloc_dt_lookup_table_iterator_t* hti);
+
+/**
+ * Get the next key and advance the iterator
+ *
+ * \param hti A valid pointer to a lookup table iterator
+ *
+ * Returns
+ *   internal hash key, 0 if error
+ */
+NETLOC_DECLSPEC unsigned long netloc_lookup_table_iterator_next_key_int(netloc_dt_lookup_table_iterator_t* hti);
 
 /**
  * Get the next entry and advance the iterator

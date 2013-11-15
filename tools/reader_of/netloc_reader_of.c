@@ -490,49 +490,74 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle)
     int num_edges = 0;
     netloc_edge_t **edges = NULL;
 
+    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t *hti_dst = NULL;
+    netloc_node_t *cur_src_node = NULL;
+    netloc_node_t *cur_dst_node = NULL;
+
     printf("Status: Computing Physical Paths\n");
 
     /*
      * Calculate the path from all sources to all destinations
      */
-    for(src_idx = 0; src_idx < dc_handle->num_nodes; ++src_idx) {
+    src_idx = 0;
+    hti_src = netloc_dt_lookup_table_iterator_t_construct(dc_handle->node_list);
+    hti_dst = netloc_dt_lookup_table_iterator_t_construct(dc_handle->node_list);
+
+    netloc_lookup_table_iterator_reset(hti_src);
+    while( !netloc_lookup_table_iterator_at_end(hti_src) ) {
+        cur_src_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti_src);
+        if( NULL == cur_src_node ) {
+            break;
+        }
+
         // JJH: For now limit to just the "host" nodes
-        if( NETLOC_NODE_TYPE_HOST != dc_handle->nodes[src_idx]->node_type ) {
+        if( NETLOC_NODE_TYPE_HOST != cur_src_node->node_type ) {
+            src_idx++;
             continue;
         }
 
 #if 0
-        printf("\tSource:      %s\n", netloc_pretty_print_node_t(dc_handle->nodes[src_idx]));
+        printf("\tSource:      %s\n", netloc_pretty_print_node_t(cur_src_node));
 #endif
-        for(dst_idx = 0; dst_idx < dc_handle->num_nodes; ++dst_idx) {
+        dst_idx = 0;
+        netloc_lookup_table_iterator_reset(hti_dst);
+        while( !netloc_lookup_table_iterator_at_end(hti_dst) ) {
+            cur_dst_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti_dst);
+            if( NULL == cur_dst_node ) {
+                break;
+            }
+
             // Skip path to self
             if( src_idx == dst_idx ) {
+                dst_idx++;
                 continue;
             }
 
             // JJH: For now limit to just the "host" nodes
-            if( NETLOC_NODE_TYPE_HOST != dc_handle->nodes[dst_idx]->node_type ) {
+            if( NETLOC_NODE_TYPE_HOST != cur_dst_node->node_type ) {
+                dst_idx++;
                 continue;
             }
 
 #if 0
             printf("Computing a path between the following two nodes\n");
-            printf("\tSource:      %s\n", netloc_pretty_print_node_t(dc_handle->nodes[src_idx]));
-            printf("\tDestination: %s\n", netloc_pretty_print_node_t(dc_handle->nodes[dst_idx]));
+            printf("\tSource:      %s\n", netloc_pretty_print_node_t(cur_src_node));
+            printf("\tDestination: %s\n", netloc_pretty_print_node_t(cur_dst_node));
 #endif
             /*
              * Calculate the path between these nodes
              */
             ret = netloc_dc_compute_path_between_nodes(dc_handle,
-                                                       dc_handle->nodes[src_idx],
-                                                       dc_handle->nodes[dst_idx],
+                                                       cur_src_node,
+                                                       cur_dst_node,
                                                        &num_edges,
                                                        &edges,
                                                        false);
             if( NETLOC_SUCCESS != ret ) {
                 fprintf(stderr, "Error: Failed to compute a path between the following two nodes\n");
-                fprintf(stderr, "Error: Source:      %s\n", netloc_pretty_print_node_t(dc_handle->nodes[src_idx]));
-                fprintf(stderr, "Error: Destination: %s\n", netloc_pretty_print_node_t(dc_handle->nodes[dst_idx]));
+                fprintf(stderr, "Error: Source:      %s\n", netloc_pretty_print_node_t(cur_src_node));
+                fprintf(stderr, "Error: Destination: %s\n", netloc_pretty_print_node_t(cur_dst_node));
                 return ret;
             }
 
@@ -541,15 +566,15 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle)
              * Store that path in the data collection
              */
             ret = netloc_dc_append_path(dc_handle,
-                                        dc_handle->nodes[src_idx]->physical_id,
-                                        dc_handle->nodes[dst_idx]->physical_id,
+                                        cur_src_node->physical_id,
+                                        cur_dst_node->physical_id,
                                         num_edges,
                                         edges,
                                         false);
             if( NETLOC_SUCCESS != ret ) {
                 fprintf(stderr, "Error: Could not append the physical path between the following two nodes\n");
-                fprintf(stderr, "Error: Source:      %s\n", netloc_pretty_print_node_t(dc_handle->nodes[src_idx]));
-                fprintf(stderr, "Error: Destination: %s\n", netloc_pretty_print_node_t(dc_handle->nodes[dst_idx]));
+                fprintf(stderr, "Error: Source:      %s\n", netloc_pretty_print_node_t(cur_src_node));
+                fprintf(stderr, "Error: Destination: %s\n", netloc_pretty_print_node_t(cur_dst_node));
                 return ret;
             }
 
@@ -557,8 +582,14 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle)
             free(edges);
             edges = NULL;
 
+            dst_idx++;
         }
+
+        src_idx++;
     }
+
+    netloc_dt_lookup_table_iterator_t_destruct(hti_src);
+    netloc_dt_lookup_table_iterator_t_destruct(hti_dst);
 
     return NETLOC_SUCCESS;
 }

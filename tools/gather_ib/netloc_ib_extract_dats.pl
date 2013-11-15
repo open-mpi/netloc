@@ -28,6 +28,9 @@ if (!$ok or !defined $rawdir) {
   print " --raw-dir <dir> (default is ./ib-raw)\n";
   print "Output directory for netloc data can be specified with\n";
   print " --out-dir <dir> (default is ./netloc)\n";
+  print "Verbose\n";
+  print " --verbose | -v\n";
+  exit -1;
 }
 
 my @subnets;
@@ -69,6 +72,8 @@ foreach my $subnet (@subnets) {
           " --routedir ".$ibroutes_files{$subnet});
   if( !defined($verbose) ) {
     $cmd .= " 1>/dev/null";
+  } else {
+    $cmd .= " -p ";
   }
   #print "CMD: $cmd\n";
   system($cmd);

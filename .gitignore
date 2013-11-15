@@ -76,3 +76,5 @@ test-suite.log
 /tests/test_map_hwloc.o
 /tests/test_metadata
 /tests/test_metadata.o
+/tests/test_conv
+/tests/test_conv.o

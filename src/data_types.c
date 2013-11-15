@@ -531,6 +531,7 @@ netloc_node_t * netloc_dt_node_t_construct()
     node->network_type = NETLOC_NETWORK_TYPE_INVALID;
     node->node_type    = NETLOC_NODE_TYPE_INVALID;
     node->physical_id  = NULL;
+    node->physical_id_int = 0;
     node->logical_id   = NULL;
     node->subnet_id    = NULL;
     node->description  = NULL;
@@ -559,10 +560,11 @@ char * netloc_pretty_print_node_t(netloc_node_t* node)
     tmp_nw_type = netloc_decode_network_type(node->network_type);
     tmp_node_type = netloc_decode_node_type(node->node_type);
 
-    asprintf(&str, "(%s-\t %s) [%23s]/[%15s] %s -- %s (%d/%d edges)",
+    asprintf(&str, "(%s-\t %s) [%23s][%lu]/[%15s] %s -- %s (%d/%d edges)",
              tmp_nw_type,
              tmp_node_type,
              node->physical_id,
+             node->physical_id_int,
              node->logical_id,
              node->subnet_id,
              node->description,
@@ -601,6 +603,8 @@ int netloc_dt_node_t_copy(netloc_node_t *from, netloc_node_t *to)
         free(to->physical_id );
     }
     to->physical_id  = STRDUP_IF_NOT_NULL(from->physical_id);
+
+    to->physical_id_int = from->physical_id_int;
 
     if( NULL != to->logical_id ) {
         free(to->logical_id);
@@ -714,6 +718,8 @@ netloc_node_t* netloc_dt_node_t_json_decode(netloc_dt_lookup_table_t *edge_table
     node->node_type    = (netloc_node_type_t)json_integer_value( json_object_get( json_node, JSON_NODE_FILE_NODE_TYPE));
 
     ASSIGN_NULL_IF_EMPTY( node->physical_id, json_node, JSON_NODE_FILE_PHY_ID);
+    SUPPORT_CONVERT_ADDR_TO_INT(node->physical_id, node->network_type, node->physical_id_int);
+
     ASSIGN_NULL_IF_EMPTY( node->logical_id, json_node, JSON_NODE_FILE_LOG_ID);
     ASSIGN_NULL_IF_EMPTY( node->subnet_id, json_node, JSON_NODE_FILE_SUBNET_ID);
 
@@ -908,6 +914,8 @@ int netloc_dt_node_t_destruct(netloc_node_t * node)
     void **path = NULL;
     netloc_dt_lookup_table_iterator_t *hti = NULL;
 
+    node->physical_id_int = 0;
+
     if( NULL != node->physical_id ) {
         free(node->physical_id);
         node->physical_id = NULL;
@@ -1001,4 +1009,97 @@ int netloc_dt_node_t_compare(netloc_node_t *a, netloc_node_t *b)
     }
 
     return NETLOC_CMP_SAME;
+}
+
+/**************************************************/
+unsigned long netloc_dt_convert_mac_str_to_int(const char * mac)
+{
+    unsigned long value;
+    unsigned char addr[6];
+
+    sscanf(mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+           &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]);
+
+    value = 0;
+    value = value | addr[0];
+    value = value << 8;
+    value = value | addr[1];
+    value = value << 8;
+    value = value | addr[2];
+    value = value << 8;
+    value = value | addr[3];
+    value = value << 8;
+    value = value | addr[4];
+    value = value << 8;
+    value = value | addr[5];
+
+    return value;
+}
+
+char * netloc_dt_convert_mac_int_to_str(const unsigned long value)
+{
+    unsigned char addr[6];
+    unsigned long rem;
+    char * tmp_str = NULL;
+
+    rem = value;
+
+    addr[0] = rem >> 40;
+    rem = rem << 8;
+    addr[1] = rem >> 40;
+    rem = rem << 8;
+    addr[2] = rem >> 40;
+    rem = rem << 8;
+    addr[3] = rem >> 40;
+    rem = rem << 8;
+    addr[4] = rem >> 40;
+    rem = rem << 8;
+    addr[5] = rem >> 40;
+
+    asprintf(&tmp_str, "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX",
+             addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+
+    return tmp_str;
+}
+
+unsigned long netloc_dt_convert_guid_str_to_int(const char * guid)
+{
+    unsigned long value;
+    short unsigned int addr[4];
+
+    sscanf(guid, "%hX:%hX:%hX:%hX",
+           &addr[0], &addr[1], &addr[2], &addr[3]);
+        
+    value = 0;
+    value = value | addr[0];
+    value = value << 16;
+    value = value | addr[1];
+    value = value << 16;
+    value = value | addr[2];
+    value = value << 16;
+    value = value | addr[3];
+
+    return value;
+}
+
+char * netloc_dt_convert_guid_int_to_str(const unsigned long value)
+{
+    short unsigned int addr[4];
+    unsigned long rem;
+    char * tmp_str = NULL;
+
+    rem = value;
+
+    addr[0] = rem >> 48;
+    rem = rem << 16;
+    addr[1] = rem >> 48;
+    rem = rem << 16;
+    addr[2] = rem >> 48;
+    rem = rem << 16;
+    addr[3] = rem >> 48;
+
+    asprintf(&tmp_str, "%04hX:%04hX:%04hX:%04hX",
+             addr[0], addr[1], addr[2], addr[3]);
+
+    return tmp_str;
 }
