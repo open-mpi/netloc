@@ -102,7 +102,7 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
                                           netloc_edge_t ***edges)
 {
     int exit_status = NETLOC_SUCCESS;
-    int i, h;
+    int i;
     pq_queue_t *queue = NULL;
     int *distance = NULL;
     bool *not_seen = NULL;
@@ -116,6 +116,10 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
     int num_rev_edges;
     netloc_edge_t **rev_edges = NULL;
 
+    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_node_t *cur_node = NULL;
+
+    unsigned long key_int;
 
     // Just in case things go poorly below
     (*num_edges) = 0;
@@ -132,28 +136,28 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
         goto cleanup;
     }
 
-    distance = (int*)malloc(sizeof(int) * handle->num_nodes);
+    distance = (int*)malloc(sizeof(int) * netloc_lookup_table_size(handle->node_list));
     if( NULL == distance ) {
         fprintf(stderr, "Error: Failed to allocate the distance array\n");
         exit_status = NETLOC_ERROR;
         goto cleanup;
     }
 
-    not_seen = (bool*)malloc(sizeof(bool) * handle->num_nodes);
+    not_seen = (bool*)malloc(sizeof(bool) * netloc_lookup_table_size(handle->node_list));
     if( NULL == not_seen ) {
         fprintf(stderr, "Error: Failed to allocate the 'not_seen' array\n");
         exit_status = NETLOC_ERROR;
         goto cleanup;
     }
 
-    prev_node = (netloc_node_t**)malloc(sizeof(netloc_node_t*) * handle->num_nodes);
+    prev_node = (netloc_node_t**)malloc(sizeof(netloc_node_t*) * netloc_lookup_table_size(handle->node_list));
     if( NULL == prev_node ) {
         fprintf(stderr, "Error: Failed to allocate the 'prev_node' array\n");
         exit_status = NETLOC_ERROR;
         goto cleanup;
     }
 
-    prev_edge = (netloc_edge_t**)malloc(sizeof(netloc_edge_t*) * handle->num_nodes);
+    prev_edge = (netloc_edge_t**)malloc(sizeof(netloc_edge_t*) * netloc_lookup_table_size(handle->node_list));
     if( NULL == prev_edge ) {
         fprintf(stderr, "Error: Failed to allocate the 'prev_edge' array\n");
         exit_status = NETLOC_ERROR;
@@ -163,12 +167,19 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
     /*
      * Initialize the data structures
      */
-    for(i = 0; i < handle->num_nodes; ++i) {
-        if( handle->nodes[i] == src_node ) {
-            pq_push(queue, 0, handle->nodes[i]);
+    i = 0;
+    hti = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);
+    while( !netloc_lookup_table_iterator_at_end(hti) ) {
+        cur_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti);
+        if( NULL == cur_node ) {
+            break;
+        }
+
+        if( cur_node == src_node ) {
+            pq_push(queue, 0, cur_node);
             distance[i] = 0;
         } else {
-            pq_push(queue, INT_MAX, handle->nodes[i]);
+            pq_push(queue, INT_MAX, cur_node);
             distance[i] = INT_MAX;
         }
 
@@ -176,6 +187,9 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
 
         prev_node[i] = NULL;
         prev_edge[i] = NULL;
+
+        cur_node->__uid__ = i;
+        ++i;
     }
 
     /*
@@ -188,33 +202,19 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
         node_u = pq_pop(queue);
         // Mark as seen
         idx_u = -1;
-        for(i = 0; i < handle->num_nodes; ++i) {
-            if( not_seen[i] && handle->nodes[i] == node_u ) {
-                not_seen[i] = false;
-                idx_u = i;
-                break;
-            }
-        }
+        i = 0;
+        idx_u = node_u->__uid__;
+        not_seen[idx_u] = false;
 
         // For all the edges from this node
         for(i = 0; i < node_u->num_edges; ++i ) {
             node_v = NULL;
             idx_v  = -1;
-            // Lookup the "dest" node
-#if 1
-            for(h = 0; h < handle->num_nodes; ++h) {
-                if( 0 == strncmp(handle->nodes[h]->physical_id,
-                                 node_u->edges[i]->dest_node_id,
-                                 strlen(handle->nodes[h]->physical_id)) ) {
-                    node_v = handle->nodes[h];
-                    idx_v = h;
-                    break;
-                }
-            }
-#else
-            node_v = node_u->edges[i]->dest_node;
 
-#endif
+            // Lookup the "dest" node
+            node_v = node_u->edges[i]->dest_node;
+            idx_v = node_v->__uid__;
+
             // If the node has been seen, skip
             if( !not_seen[idx_v] ) {
                 continue;
@@ -238,21 +238,18 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
     /*
      * Reconstruct the path by picking up the edges
      * The edges will be in reverse order (dest to source).
-     * JJH: The constant traversal of the node list is bad. Please Fix Me...
      */
     num_rev_edges = 0;
     rev_edges     = NULL;
 
     // Find last hop
-    for(h = 0; h < handle->num_nodes; ++h) {
-        if( 0 == strncmp(handle->nodes[h]->physical_id,
-                         dest_node->physical_id,
-                         strlen(handle->nodes[h]->physical_id)) ) {
-            node_u = handle->nodes[h];
-            idx_u = h;
-            break;
-        }
-    }
+    SUPPORT_CONVERT_ADDR_TO_INT(dest_node->physical_id,
+                                handle->network->network_type,
+                                key_int);
+    node_u  = netloc_lookup_table_access_with_int( handle->node_list,
+                                                   dest_node->physical_id,
+                                                   key_int);
+    idx_u = node_u->__uid__;
 
     node_v = NULL;
     idx_v  = -1;
@@ -260,10 +257,7 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
         // Find the linking edge
         if( node_u != dest_node) {
             for(i = 0; i < node_u->num_edges; ++i ) {
-                if( 0 == strncmp(node_v->physical_id,
-                                 node_u->edges[i]->dest_node_id,
-                                 strlen(node_v->physical_id)) ) {
-
+                if( node_v->physical_id_int == node_u->edges[i]->dest_node->physical_id_int ) {
                     ++num_rev_edges;
                     rev_edges = (netloc_edge_t**)realloc(rev_edges, sizeof(netloc_edge_t*) * num_rev_edges);
                     if( NULL == rev_edges ) {
@@ -281,15 +275,13 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
         idx_v  = idx_u;
 
         // Find the next node
-        for(h = 0; h < handle->num_nodes; ++h) {
-            if( 0 == strncmp(handle->nodes[h]->physical_id,
-                             prev_node[idx_u]->physical_id,
-                             strlen(handle->nodes[h]->physical_id)) ) {
-                node_u = handle->nodes[h];
-                idx_u = h;
-                break;
-            }
-        }
+        SUPPORT_CONVERT_ADDR_TO_INT(prev_node[idx_u]->physical_id,
+                                    handle->network->network_type,
+                                    key_int);
+        node_u = netloc_lookup_table_access_with_int( handle->node_list,
+                                                      prev_node[idx_u]->physical_id,
+                                                      key_int);
+        idx_u = node_u->__uid__;
     }
 
     for(i = 0; i < src_node->num_edges; ++i ) {
@@ -299,9 +291,7 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
             exit_status = NETLOC_ERROR;
             goto cleanup;
         }
-        if( 0 == strncmp(node_v->physical_id,
-                         src_node->edges[i]->dest_node_id,
-                         strlen(node_v->physical_id)) ) {
+        if( node_v->physical_id_int == src_node->edges[i]->dest_node->physical_id_int ) {
             ++num_rev_edges;
             rev_edges = (netloc_edge_t**)realloc(rev_edges, sizeof(netloc_edge_t*) * num_rev_edges);
             if( NULL == rev_edges ) {
@@ -330,6 +320,7 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
 
     for( i = 0; i < num_rev_edges; ++i ) {
         (*edges)[i] = rev_edges[num_rev_edges-1-i];
+        //printf("DEBUG: \t Edge: %s\n", netloc_pretty_print_edge_t( (*edges)[i] ) );
     }
 
 
@@ -366,6 +357,8 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
         free(prev_edge);
         prev_edge = NULL;
     }
+
+    netloc_dt_lookup_table_iterator_t_destruct(hti);
 
     return exit_status;
 }

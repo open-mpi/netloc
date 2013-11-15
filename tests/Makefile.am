@@ -19,9 +19,10 @@ check_PROGRAMS = \
 	test_ETH_verbose \
 	test_find_neighbors \
 	test_metadata \
-        test_map \
-        test_map_hwloc \
-        hwloc_compress \
+	test_conv \
+	test_map \
+	test_map_hwloc \
+	hwloc_compress \
 	lsmap \
 	map_paths
 

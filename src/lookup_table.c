@@ -103,6 +103,23 @@ const char * netloc_lookup_table_iterator_next_key(netloc_dt_lookup_table_iterat
     return NULL;
 }
 
+unsigned long netloc_lookup_table_iterator_next_key_int(netloc_dt_lookup_table_iterator_t* hti)
+{
+    size_t i;
+
+    for(i = hti->loc; i < netloc_lookup_table_size(hti->htp); ++i) {
+        if( NULL != hti->htp->ht_entries[i] ) {
+            hti->loc = i+1;
+            return hti->htp->ht_entries[i]->__key__;
+        }
+    }
+
+    hti->loc = netloc_lookup_table_size(hti->htp);
+    hti->at_end = true;
+
+    return 0;
+}
+
 void * netloc_lookup_table_iterator_next_entry(netloc_dt_lookup_table_iterator_t* hti)
 {
     size_t i;
@@ -129,6 +146,7 @@ netloc_lookup_table_entry_t *netloc_lookup_table_entry_t_construct()
         return NULL;
     }
 
+    hte->__key__ = 0;
     hte->key = NULL;
     hte->value = NULL;
 
@@ -140,6 +158,7 @@ netloc_lookup_table_entry_t *netloc_copy_lookup_table_entry_t(netloc_lookup_tabl
     netloc_lookup_table_entry_t* hte = NULL;
     hte = netloc_lookup_table_entry_t_construct();
 
+    hte->__key__ = orig->__key__;
     hte->key = dup ? strdup(orig->key) : orig->key;
     hte->value = orig->value;
 
@@ -151,6 +170,8 @@ int netloc_lookup_table_entry_t_destruct(netloc_lookup_table_entry_t* hte, int d
     if( NULL == hte ) {
         return NETLOC_SUCCESS;
     }
+
+    hte->__key__ = 0;
 
     if( NULL != hte->key ) {
         if (dup) {
@@ -234,22 +255,40 @@ int netloc_lookup_table_destroy(netloc_dt_lookup_table_t *ht)
 
 int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, void *value)
 {
+    unsigned long hashed_key;
+    // JJH : Add hash function
+    hashed_key = 0;
+
+    return netloc_lookup_table_append_with_int(ht, key, hashed_key, value);
+}
+
+int netloc_lookup_table_append_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value)
+{
     int dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
     size_t i, a;
     int len;
 
+    // Check if key already exists!
+    // If not then we are looking at the next free entry
     for(i = 0; i < ht->ht_size; ++i ) {
         if( NULL == ht->ht_entries[i] ) {
             break;
         }
         else {
-            if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
-                len = strlen(key);
-            } else {
-                len = strlen(ht->ht_entries[i]->key);
+            if( 0 != key_int ) {
+                if( key_int == ht->ht_entries[i]->__key__ ) {
+                    return NETLOC_ERROR_EXISTS;
+                }
             }
-            if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
-                return NETLOC_ERROR_EXISTS;
+            else {
+                if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
+                    len = strlen(key);
+                } else {
+                    len = strlen(ht->ht_entries[i]->key);
+                }
+                if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
+                    return NETLOC_ERROR_EXISTS;
+                }
             }
         }
     }
@@ -268,12 +307,22 @@ int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, vo
     ht->ht_entries[i] = netloc_lookup_table_entry_t_construct();
     ht->ht_entries[i]->key   = dup ? strdup(key) : key;
     ht->ht_entries[i]->value = value;
+    ht->ht_entries[i]->__key__ = key_int;
     ht->ht_used_size += 1;
 
     return NETLOC_SUCCESS;
 }
 
 void * netloc_lookup_table_access(netloc_dt_lookup_table_t *ht, const char *key)
+{
+    unsigned long hashed_key;
+    // JJH : Add hash function
+    hashed_key = 0;
+
+    return netloc_lookup_table_access_with_int(ht, key, hashed_key);
+}
+
+void * netloc_lookup_table_access_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int)
 {
     size_t i;
     int len;
@@ -283,18 +332,122 @@ void * netloc_lookup_table_access(netloc_dt_lookup_table_t *ht, const char *key)
             continue;
         }
         else {
-            if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
-                len = strlen(key);
-            } else {
-                len = strlen(ht->ht_entries[i]->key);
+            if( 0 != key_int ) {
+                if( key_int == ht->ht_entries[i]->__key__ ) {
+                    return ht->ht_entries[i]->value;
+                }
             }
-            if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
-                return ht->ht_entries[i]->value;
+            else {
+                if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
+                    len = strlen(key);
+                } else {
+                    len = strlen(ht->ht_entries[i]->key);
+                }
+                if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
+                    return ht->ht_entries[i]->value;
+                }
             }
         }
     }
 
     return NULL;
+}
+
+int netloc_lookup_table_replace(netloc_dt_lookup_table_t *ht, const char *key, void *value)
+{
+    unsigned long hashed_key;
+    // JJH : Add hash function
+    hashed_key = 0;
+
+    return netloc_lookup_table_replace_with_int(ht, key, hashed_key, value);
+}
+
+int netloc_lookup_table_replace_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value)
+{
+    size_t i;
+    int len;
+
+    // Find this value
+    for(i = 0; i < ht->ht_size; ++i ) {
+        if( NULL == ht->ht_entries[i] ) {
+            break;
+        }
+        else {
+            if( 0 != key_int ) {
+                if( key_int == ht->ht_entries[i]->__key__ ) {
+                    ht->ht_entries[i]->value = value;
+                }
+            }
+            else {
+                if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
+                    len = strlen(key);
+                } else {
+                    len = strlen(ht->ht_entries[i]->key);
+                }
+                if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
+                    ht->ht_entries[i]->value = value;
+                }
+            }
+        }
+    }
+
+    return NETLOC_SUCCESS;
+}
+
+int netloc_lookup_table_remove(netloc_dt_lookup_table_t *ht, const char *key)
+{
+    unsigned long hashed_key;
+    // JJH : Add hash function
+    hashed_key = 0;
+
+    return netloc_lookup_table_remove_with_int(ht, key, hashed_key);
+}
+int netloc_lookup_table_remove_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int)
+{
+    size_t i;
+    int len;
+    int idx_to_remove = -1;
+    int dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
+
+    // Find this value
+    for(i = 0; i < ht->ht_size; ++i ) {
+        if( NULL == ht->ht_entries[i] ) {
+            break;
+        }
+        else {
+            if( 0 != key_int ) {
+                if( key_int == ht->ht_entries[i]->__key__ ) {
+                    idx_to_remove = i;
+                    break;
+                }
+            }
+            else {
+                if( strlen(key) > strlen(ht->ht_entries[i]->key) ) {
+                    len = strlen(key);
+                } else {
+                    len = strlen(ht->ht_entries[i]->key);
+                }
+                if( 0 == strncmp(ht->ht_entries[i]->key, key, len) ) {
+                    idx_to_remove = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    if( idx_to_remove < 0 ) {
+        return NETLOC_ERROR;
+    }
+
+    netloc_lookup_table_entry_t_destruct(ht->ht_entries[idx_to_remove], dup);
+    for( i = idx_to_remove; i < ht->ht_size-1; ++i ) {
+        ht->ht_entries[i] = ht->ht_entries[i+1];
+    }
+    ht->ht_entries[ht->ht_size-1] = NULL;
+
+    ht->ht_used_size -= 1;
+
+    return NETLOC_SUCCESS;
 }
 
 void netloc_lookup_table_pretty_print(netloc_dt_lookup_table_t *ht)

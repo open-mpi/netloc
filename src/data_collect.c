@@ -36,7 +36,6 @@ static void display_edge(netloc_edge_t *edge, char * prefix);
  */
 static void display_path(const char * src, const char * dest, int num_edges, netloc_edge_t **edges, char * prefix);
 
-
 netloc_data_collection_handle_t * netloc_dt_data_collection_handle_t_construct()
 {
     netloc_data_collection_handle_t *handle = NULL;
@@ -55,8 +54,7 @@ netloc_data_collection_handle_t * netloc_dt_data_collection_handle_t_construct()
     handle->filename_physical_paths = NULL;
     handle->filename_logical_paths = NULL;
 
-    handle->num_nodes = 0;
-    handle->nodes     = NULL;
+    handle->node_list = NULL;
 
     handle->edges     = NULL;
 
@@ -70,8 +68,8 @@ netloc_data_collection_handle_t * netloc_dt_data_collection_handle_t_construct()
 
 int netloc_dt_data_collection_handle_t_destruct(netloc_data_collection_handle_t *handle)
 {
-    int i;
     netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_node_t *cur_node = NULL;
     netloc_edge_t *cur_edge = NULL;
 
     if( NULL != handle->network ) {
@@ -107,14 +105,21 @@ int netloc_dt_data_collection_handle_t_destruct(netloc_data_collection_handle_t 
         handle->filename_logical_paths = NULL;
     }
 
-    if( NULL != handle->nodes ) {
-        for(i = 0; i < handle->num_nodes; ++i ) {
-            netloc_dt_node_t_destruct(handle->nodes[i]);
-            handle->nodes[i] = NULL;
+    if( NULL != handle->node_list ) {
+        // Make sure to free all of the nodes pointed to in the lookup table
+        hti = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);
+        while( !netloc_lookup_table_iterator_at_end(hti) ) {
+            cur_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti);
+            if( NULL == cur_node ) {
+                break;
+            }
+            netloc_dt_node_t_destruct(cur_node);
         }
-        free(handle->nodes);
-        handle->nodes = NULL;
-        handle->num_nodes = 0;
+        netloc_dt_lookup_table_iterator_t_destruct(hti);
+
+        netloc_lookup_table_destroy(handle->node_list);
+        free(handle->node_list);
+        handle->node_list = NULL;
     }
 
     if( NULL != handle->edges ) {
@@ -220,7 +225,6 @@ netloc_data_collection_handle_t * netloc_dc_create(netloc_network_t *network, ch
 int netloc_dc_close(netloc_data_collection_handle_t *handle)
 {
     int ret;
-    int i;
 
     /*
      * Sanity Checks
@@ -263,15 +267,24 @@ int netloc_dc_close(netloc_data_collection_handle_t *handle)
 
 
     /******************** Physical Path Data **************************/
+    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_node_t *cur_node = NULL;
 
     /*
      * Add path entries to the JSON file (physical path)
      */
-    for(i = 0; i < handle->num_nodes; ++i ) {
+    hti = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);
+    while( !netloc_lookup_table_iterator_at_end(hti) ) {
+        cur_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti);
+        if( NULL == cur_node ) {
+            break;
+        }
+
         json_object_set_new(handle->phy_path_data_acc,
-                            handle->nodes[i]->physical_id,
-                            netloc_dt_node_t_json_encode_paths(handle->nodes[i], handle->nodes[i]->physical_paths));
+                            cur_node->physical_id,
+                            netloc_dt_node_t_json_encode_paths(cur_node, cur_node->physical_paths));
     }
+    netloc_dt_lookup_table_iterator_t_destruct(hti);
     json_object_set_new(handle->phy_path_data, JSON_NODE_FILE_PATH_INFO, handle->phy_path_data_acc);
 
     /*
@@ -292,11 +305,18 @@ int netloc_dc_close(netloc_data_collection_handle_t *handle)
     /*
      * Add path entries to the JSON file (logical path)
      */
-    for(i = 0; i < handle->num_nodes; ++i ) {
+    hti = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);
+    while( !netloc_lookup_table_iterator_at_end(hti) ) {
+        cur_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(hti);
+        if( NULL == cur_node ) {
+            break;
+        }
+
         json_object_set_new(handle->path_data_acc,
-                            handle->nodes[i]->physical_id,
-                            netloc_dt_node_t_json_encode_paths(handle->nodes[i], handle->nodes[i]->logical_paths));
+                            cur_node->physical_id,
+                            netloc_dt_node_t_json_encode_paths(cur_node, cur_node->logical_paths));
     }
+    netloc_dt_lookup_table_iterator_t_destruct(hti);
     json_object_set_new(handle->path_data, JSON_NODE_FILE_PATH_INFO, handle->path_data_acc);
 
     /*
@@ -353,22 +373,64 @@ char * netloc_dc_handle_get_unique_id_str_filename(char *filename)
 
 int netloc_dc_append_node(netloc_data_collection_handle_t *handle, netloc_node_t *node)
 {
+    char *key = NULL;
+    netloc_node_t *cur_node = NULL;
+    unsigned long key_int;
+
+    /*
+     * Setup the table for the first node
+     */
+    if(NULL == handle->node_list) {
+        handle->node_list = calloc(1, sizeof(*handle->node_list));
+        netloc_lookup_table_init(handle->node_list, 1, 0);
+    }
+
+    /*
+     * Check to see if we have seen this node before
+     */
+    SUPPORT_CONVERT_ADDR_TO_INT(node->physical_id, handle->network->network_type, key_int);
+    asprintf(&key, "%s", node->physical_id);
+    cur_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
+
+    if( NULL != cur_node ) {
+        // JJH: We should be able to use 'replace' instead of 'remove' and 'append'
+        //      Need to double check ordering.
+        netloc_lookup_table_remove_with_int(handle->node_list, key, key_int);
+    }
+    free(key);
+    key = NULL;
+
     /*
      * Add the node to our list
      */
-    handle->num_nodes++;
-    handle->nodes = (netloc_node_t**)realloc(handle->nodes, sizeof(netloc_node_t*)*handle->num_nodes);
-    if( NULL == handle->nodes ) {
-        fprintf(stderr, "Error: Out of memory appending a node\n");
-        return NETLOC_ERROR;
+    if( NULL == cur_node ) {
+        cur_node = netloc_dt_node_t_dup(node);
+
+        cur_node->__uid__ = 0;
+
+        cur_node->physical_id_int = key_int;
+        asprintf(&key, "%s", node->physical_id);
+        netloc_lookup_table_append_with_int(handle->node_list, key, key_int, cur_node);
+
+        /*
+         * Encode the data: Physical ID is the key
+         */
+        json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
     }
+    else if( NETLOC_NODE_TYPE_INVALID == cur_node->node_type ) {
+        netloc_dt_node_t_copy(node, cur_node);
 
-    handle->nodes[handle->num_nodes-1] = netloc_dt_node_t_dup(node);
+        cur_node->__uid__ = 0;
 
-    /*
-     * Encode the data: Physical ID is the key
-     */
-    json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
+        cur_node->physical_id_int = key_int;
+        asprintf(&key, "%s", node->physical_id);
+        netloc_lookup_table_append_with_int(handle->node_list, key, key_int, cur_node);
+
+        /*
+         * Encode the data: Physical ID is the key
+         */
+        json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
+    }
 
     return NETLOC_SUCCESS;
 }
@@ -377,6 +439,8 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
 {
     char *key = NULL;
     netloc_edge_t *found_edge = NULL;
+    netloc_node_t *found_node = NULL;
+    unsigned long key_int;
 
     /*
      * Setup the table for the first edge
@@ -384,6 +448,14 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
     if( NULL == handle->edges ) {
         handle->edges = calloc(1, sizeof(*handle->edges));
         netloc_lookup_table_init(handle->edges, 1, 0);
+    }
+
+    /*
+     * Setup the table for the first node
+     */
+    if(NULL == handle->node_list) {
+        handle->node_list = calloc(1, sizeof(*handle->node_list));
+        netloc_lookup_table_init(handle->node_list, 1, 0);
     }
 
     /*
@@ -400,11 +472,50 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
      */
     if( NULL == found_edge ) {
         found_edge = netloc_dt_edge_t_dup(edge);
+
         asprintf(&key, "%d", found_edge->edge_uid);
         netloc_lookup_table_append(handle->edges, key, found_edge);
         free(key);
         key = NULL;
     }
+
+    /*
+     * Update the edge links
+     * if the node endpoint is not in the list, then add a stub
+     */
+    SUPPORT_CONVERT_ADDR_TO_INT(edge->src_node_id, handle->network->network_type, key_int);
+    asprintf(&key, "%s", edge->src_node_id);
+    found_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
+
+    if( NULL == found_node ) {
+        found_node = netloc_dt_node_t_construct();
+
+        found_node->physical_id = strdup(edge->src_node_id);
+        found_node->physical_id_int = key_int;
+        found_node->node_type = NETLOC_NODE_TYPE_INVALID;
+
+        netloc_lookup_table_append_with_int(handle->node_list, key, key_int, found_node);
+    }
+    found_edge->src_node = found_node;
+    free(key);
+    key = NULL;
+
+    asprintf(&key, "%s", edge->dest_node_id);
+    SUPPORT_CONVERT_ADDR_TO_INT(edge->dest_node_id, handle->network->network_type, key_int);
+    found_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
+
+    if( NULL == found_node ) {
+        found_node = netloc_dt_node_t_construct();
+
+        found_node->physical_id = strdup(edge->dest_node_id);
+        found_node->physical_id_int = key_int;
+        found_node->node_type = NETLOC_NODE_TYPE_INVALID;
+
+        netloc_lookup_table_append_with_int(handle->node_list, key, key_int, found_node);
+    }
+    found_edge->dest_node = found_node;
+    free(key);
+    key = NULL;
 
     /*
      * Add the edge index to the node
@@ -429,16 +540,13 @@ int netloc_dc_append_path(netloc_data_collection_handle_t *handle,
     int i;
     netloc_node_t *node = NULL;
     int *edge_ids = NULL;
+    unsigned long key_int;
 
     /*
      * Find the source Node
      */
-    for(i = 0; i < handle->num_nodes; ++i ) {
-        if( 0 == strncmp(handle->nodes[i]->physical_id, src_node_id, strlen(src_node_id)) ) {
-            node = handle->nodes[i];
-            break;
-        }
-    }
+    SUPPORT_CONVERT_ADDR_TO_INT(src_node_id, handle->network->network_type, key_int);
+    node = netloc_lookup_table_access_with_int( handle->node_list, src_node_id, key_int );
 
     if( NULL == node ) {
         fprintf(stderr, "Error: node not found in the list (id = %s)\n", src_node_id);
@@ -494,69 +602,72 @@ int netloc_dc_append_path(netloc_data_collection_handle_t *handle,
 
 netloc_node_t * netloc_dc_get_node_by_physical_id(netloc_data_collection_handle_t *handle, char * phy_id)
 {
-    int i;
+    unsigned long key_int;
 
     if( NULL == phy_id ) {
         return NULL;
     }
 
-    for(i = 0; i < handle->num_nodes; ++i) {
-        if( 0 == strncmp(handle->nodes[i]->physical_id, phy_id, strlen(handle->nodes[i]->physical_id)) ) {
-            return handle->nodes[i];
-        }
-    }
-
-    return NULL;
+    SUPPORT_CONVERT_ADDR_TO_INT(phy_id, handle->network->network_type, key_int);
+    return netloc_lookup_table_access_with_int( handle->node_list, phy_id, key_int );
 }
 
 
 void netloc_dc_pretty_print(netloc_data_collection_handle_t *handle)
 {
-    int n, p;
+    int p;
     netloc_dt_lookup_table_iterator_t *hti = NULL;
     const char * key = NULL;
     netloc_edge_t **path = NULL;
     int path_len;
+    netloc_dt_lookup_table_iterator_t *htin = NULL;
+    netloc_node_t *cur_node = NULL;
 
-    for( n = 0; n < handle->num_nodes; ++n ) {
-        display_node(handle->nodes[n], strdup(""));
+    htin = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);
+    while( !netloc_lookup_table_iterator_at_end(htin) ) {
+        cur_node = (netloc_node_t*)netloc_lookup_table_iterator_next_entry(htin);
+        if( NULL == cur_node ) {
+            break;
+        }
+        display_node(cur_node, strdup(""));
 
         printf("Physical Paths\n");
         printf("--------------\n");
         // Display all of the paths from this node to other nodes (if any)
-        hti = netloc_dt_lookup_table_iterator_t_construct(handle->nodes[n]->physical_paths);
+        hti = netloc_dt_lookup_table_iterator_t_construct(cur_node->physical_paths);
         while( !netloc_lookup_table_iterator_at_end(hti) ) {
             key = netloc_lookup_table_iterator_next_key(hti);
             if( NULL == key ) {
                 break;
             }
-            path = (netloc_edge_t**)netloc_lookup_table_access(handle->nodes[n]->physical_paths, key);
+            path = (netloc_edge_t**)netloc_lookup_table_access(cur_node->physical_paths, key);
             path_len = 0;
             for(p = 0; NULL != path[p]; ++p) {
                 ++path_len;
             }
-            display_path(handle->nodes[n]->physical_id,
+            display_path(cur_node->physical_id,
                          key, path_len, path, strdup("\t"));
         }
 
         printf("Logical Paths\n");
         printf("--------------\n");
         // Display all of the paths from this node to other nodes (if any)
-        hti = netloc_dt_lookup_table_iterator_t_construct(handle->nodes[n]->logical_paths);
+        hti = netloc_dt_lookup_table_iterator_t_construct(cur_node->logical_paths);
         while( !netloc_lookup_table_iterator_at_end(hti) ) {
             key = netloc_lookup_table_iterator_next_key(hti);
             if( NULL == key ) {
                 break;
             }
-            path = (netloc_edge_t**)netloc_lookup_table_access(handle->nodes[n]->logical_paths, key);
+            path = (netloc_edge_t**)netloc_lookup_table_access(cur_node->logical_paths, key);
             path_len = 0;
             for(p = 0; NULL != path[p]; ++p) {
                 ++path_len;
             }
-            display_path(handle->nodes[n]->physical_id,
+            display_path(cur_node->physical_id,
                          key, path_len, path, strdup("\t"));
         }
     }
+    netloc_dt_lookup_table_iterator_t_destruct(htin);
 }
 
 /*************************************************************

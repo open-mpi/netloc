@@ -72,6 +72,22 @@ typedef enum {
 #define URI_PREFIX_FILE "file://"
 
 
+#define SUPPORT_CONVERT_ADDR_TO_INT(addr, type, v) {        \
+    if( NETLOC_NETWORK_TYPE_ETHERNET == type ) {            \
+        v = netloc_dt_convert_mac_str_to_int(addr);         \
+    } else {                                                \
+        v = netloc_dt_convert_guid_str_to_int(addr);        \
+    }                                                       \
+}
+
+#define SUPPORT_CONVERT_ADDR_TO_STR(addr, type, v) {    \
+    if( NETLOC_NETWORK_TYPE_ETHERNET == type ) {        \
+        v = netloc_dt_convert_mac_int_to_str(addr);     \
+    } else {                                            \
+        v = netloc_dt_convert_guid_int_to_str(addr);    \
+    }                                                   \
+}
+
 /***********************************************************************
  *        Support Functions
  ***********************************************************************/

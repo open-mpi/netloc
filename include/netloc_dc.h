@@ -70,9 +70,8 @@ struct netloc_data_collection_handle_t {
     /** Filename: Logical Paths */
     char * filename_logical_paths;
 
-    /** Node List */
-    int num_nodes;
-    netloc_node_t **nodes;
+    /** Lookup table for all node information */
+    netloc_dt_lookup_table_t *node_list;
 
     /** Lookup table for all edge information */
     netloc_dt_lookup_table_t *edges;
