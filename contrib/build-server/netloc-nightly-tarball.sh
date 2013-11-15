@@ -8,8 +8,6 @@
 
 # e-mail address to send results to
 results_addr=netloc-devel@open-mpi.org
-# JMS REMOVE ME
-results_addr=jsquyres@cisco.com
 
 # git repository URL
 code_uri=https://github.com/open-mpi/netloc.git
