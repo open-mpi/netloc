@@ -1,0 +1,20 @@
+Copyright (c) 2013      University of Wisconsin-La Crosse.
+                        All rights reserved.
+Copyright (c) 2013      Cisco Systems, Inc.  All rights reserved.
+
+$COPYRIGHT$
+
+See COPYING in top-level directory.
+Additional copyrights may follow
+
+$HEADER$
+
+===========================================================================
+
+This file contains the main features as well as overviews of specific
+bug fixes (and other actions) for each version of neloc since version
+0.5.
+
+Version 0.5
+-----------
+- Initial public release.
