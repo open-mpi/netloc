@@ -92,38 +92,11 @@ make_tarball() {
     #
     echo "*** Running configure..."
     rm -f success
-    (./configure 2>&1 && touch success) | tee config.out
+    (./configure $NETLOC_CONFIGURE_FLAGS 2>&1 && touch success) | tee config.out
     if test ! -f success; then 
         echo "Configure failed.  Aborting"
         exit 1
     fi
-
-    #
-    # Explicitly create the doxygen docs
-    #
-    echo "*** Making doxygen docs..."
-    cd doc
-    rm -rf doxygen-doc
-    rm -f success
-    (make doc 2>&1 && touch success) | tee doc.out
-    if test ! -f success; then 
-        echo "Making doxygen docs failed.  Aborting"
-        exit 1
-    fi
-
-    #
-    # Explicitly create the README file
-    #
-    echo "*** Making README..."
-    rm -rf ../README
-    rm -f success
-    (make readme 2>&1 && touch success) | tee readme.out
-    if test ! -f success; then 
-        echo "Making README failed.  Aborting"
-        exit 1
-    fi
-    rm -f success
-    cd ..
 
     #
     # make tarball
