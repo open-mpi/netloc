@@ -119,9 +119,9 @@ int main(int argc, char ** argv) {
                ARG_ROUTEDIR, ARG_SHORT_ROUTEDIR,
                ARG_SUBNET, ARG_SHORT_SUBNET,
                ARG_OUTDIR, ARG_SHORT_OUTDIR);
-        printf("       Default %s = none\n", ARG_ROUTEDIR);
-        printf("       Default %s = \"unknown\"\n", ARG_SUBNET);
-        printf("       Default %s = current working directory\n", ARG_OUTDIR);
+        printf("       Default %-10s = none\n", ARG_ROUTEDIR);
+        printf("       Default %-10s = \"unknown\"\n", ARG_SUBNET);
+        printf("       Default %-10s = current working directory\n", ARG_OUTDIR);
         return NETLOC_ERROR;
     }
 
@@ -369,13 +369,13 @@ static int run_parser() {
 
     asprintf(&command, "netloc_reader_ib_backend_general -i %s -s %s -o %s",
              file_ibnetdiscover, subnet, out_file_nodes);
-    //printf("\t Command: %s\n", command);
 
     ret = system(command);
     if( ret != 0 ) {
         fprintf(stderr, "Error: Failed to process the ibnetdiscover data at %s!\n",
                 file_ibnetdiscover);
         fprintf(stderr, "Error: See error message above for more details\n");
+        fprintf(stderr, "Error: Command: %s\n", command);
         free(command);
         return ret;
     }
@@ -392,12 +392,12 @@ static int run_routes_parser() {
 
     asprintf(&command, "netloc_reader_ib_backend_log_prep -d %s -o %s",
              dir_ibroutes, out_file_log_prep);
-    //printf("\t Command: %s\n", command);
 
     ret = system(command);
     if( ret != 0 ) {
         fprintf(stderr, "Error: Failed to process the ibroutes data at %s! See error message above for more details\n",
                 dir_ibroutes);
+        fprintf(stderr, "Error: Command: %s\n", command);
         free(command);
         return ret;
     }
@@ -666,7 +666,7 @@ static int process_logical_paths(netloc_data_collection_handle_t *dc_handle)
         }
         netloc_dt_lookup_table_iterator_t_destruct(hti2);
         netloc_lookup_table_destroy(tmp_routes);
-	free(tmp_routes);
+        free(tmp_routes);
     }
     netloc_dt_lookup_table_iterator_t_destruct(hti);
     netloc_lookup_table_destroy(all_routes);

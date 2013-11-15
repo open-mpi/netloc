@@ -97,7 +97,7 @@ static char * auth_password = NULL;
  */
 static int num_valid_controllers = 3;
 static int cur_controller_idx = -1;
-const char * valid_controllers[3] = {"noop",
+const char * valid_controllers[3] = {"noop", // Must be index 0
                                      "floodlight",
                                      "opendaylight"};
 const char * valid_controllers_cmds[3] = {"true",
@@ -129,11 +129,12 @@ int main(int argc, char ** argv) {
                ARG_AUTH_USER, ARG_SHORT_AUTH_USER,
                ARG_AUTH_PASS, ARG_SHORT_AUTH_PASS,
                ARG_HELP, ARG_SHORT_HELP);
-        printf("       Default %s = \"unknown\"\n", ARG_SUBNET);
-        printf("       Default %s = \"127.0.0.1:8080\"\n", ARG_ADDRESS);
-        printf("       Default %s = current working directory\n", ARG_OUTDIR);
+        printf("       Default %-10s = \"unknown\"\n", ARG_SUBNET);
+        printf("       Default %-10s = \"127.0.0.1:8080\"\n", ARG_ADDRESS);
+        printf("       Default %-10s = current working directory\n", ARG_OUTDIR);
         printf("       Valid Options for %s:\n", ARG_CONTROLLER );
-        for(i = 0; i < num_valid_controllers; ++i) {
+        // Note: Hide 'noop' since it is only meant for debugging, and not for normal use
+        for(i = 1; i < num_valid_controllers; ++i) {
             printf("\t\t%s\n", valid_controllers[i] );
         }
 
@@ -436,11 +437,11 @@ static int run_parser() {
 
     asprintf(&command, "%s -s %s -o %s -a %s %s %s",
              valid_controllers_cmds[cur_controller_idx], subnet, out_file_nodes, uri_address, auth_u_str, auth_p_str);
-    //printf("\t Command: %s\n", command);
-
+    
     ret = system(command);
     if( ret != 0 ) {
         fprintf(stderr, "Error: Failed to query the %s controller! See error message above for more details\n", valid_controllers[cur_controller_idx]);
+        fprintf(stderr, "Error: Command: %s\n", command);
         free(auth_u_str);
         free(auth_p_str);
         free(command);

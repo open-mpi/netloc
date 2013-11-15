@@ -153,8 +153,9 @@ int netloc_lookup_table_entry_t_destruct(netloc_lookup_table_entry_t* hte, int d
     }
 
     if( NULL != hte->key ) {
-        if (dup)
-	  free((char*) hte->key);
+        if (dup) {
+            free((char*) hte->key);
+        }
         hte->key = NULL;
     }
     hte->value = NULL;
@@ -177,7 +178,7 @@ int netloc_dt_lookup_table_t_copy(netloc_dt_lookup_table_t *from, netloc_dt_look
 
     for(i = 0; i < from->ht_size; ++i ) {
         if( NULL != from->ht_entries[i] ) {
-	  to->ht_entries[i] = netloc_copy_lookup_table_entry_t(from->ht_entries[i], dup);
+            to->ht_entries[i] = netloc_copy_lookup_table_entry_t(from->ht_entries[i], dup);
         }
     }
 
@@ -198,6 +199,7 @@ int netloc_lookup_table_init(netloc_dt_lookup_table_t *ht, size_t size, unsigned
         return NETLOC_ERROR;
     }
     ht->ht_size = size;
+    ht->ht_used_size = 0;
     ht->flags = flags;
 
     for(i = 0; i < ht->ht_size; ++i ) {
@@ -219,12 +221,13 @@ int netloc_lookup_table_destroy(netloc_dt_lookup_table_t *ht)
 
     for(i = 0; i < ht->ht_size; ++i) {
         if( NULL != ht->ht_entries[i] ) {
-	  netloc_lookup_table_entry_t_destruct(ht->ht_entries[i], dup);
+            netloc_lookup_table_entry_t_destruct(ht->ht_entries[i], dup);
         }
     }
     free(ht->ht_entries);
     ht->ht_entries = NULL;
     ht->ht_size = 0;
+    ht->ht_used_size = 0;
 
     return NETLOC_SUCCESS;
 }
@@ -265,6 +268,7 @@ int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, vo
     ht->ht_entries[i] = netloc_lookup_table_entry_t_construct();
     ht->ht_entries[i]->key   = dup ? strdup(key) : key;
     ht->ht_entries[i]->value = value;
+    ht->ht_used_size += 1;
 
     return NETLOC_SUCCESS;
 }

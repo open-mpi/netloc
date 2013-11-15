@@ -238,6 +238,8 @@ struct netloc_dt_lookup_table_t {
     netloc_lookup_table_entry_t **ht_entries;
     /** Number of entries in the lookup table */
     size_t   ht_size;
+    /** Number of filled entried in the lookup table */
+    size_t   ht_used_size;
     /** Flags */
     unsigned long flags;
 };
@@ -809,18 +811,10 @@ static inline int netloc_lookup_table_size_alloc(netloc_dt_lookup_table_t *table
  *   The used size of the hash table
  */
 static inline int netloc_lookup_table_size(netloc_dt_lookup_table_t *table) {
-    size_t i;
-    int ctr;
     if( NULL == table ) {
         return 0;
     } else {
-        ctr = 0;
-        for(i = 0; i < table->ht_size; ++i) {
-            if( NULL != table->ht_entries[i] ) {
-                ++ctr;
-            }
-        }
-        return ctr;
+        return table->ht_used_size;
     }
 }
 
