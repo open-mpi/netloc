@@ -147,33 +147,29 @@ AS_IF([test "$with_jansson" = "yes" -o -z "$with_jansson"],
               AC_MSG_ERROR([Cannot continue])])
       ])
 
-jansson_happy=0
-AC_CHECK_HEADER([jansson.h], [jansson_happy=1])
-AS_IF([test $jansson_happy -eq 0],
+AC_CHECK_HEADER([jansson.h], [:],
       [AC_MSG_WARN([Cannot find jansson.h])
        AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some CPPFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
-jansson_happy=0
-AC_CHECK_LIB([jansson], [json_true], [jansson_happy=1])
-AS_IF([test $jansson_happy -eq 0],
+AC_CHECK_LIB([jansson], [json_true], [:],
       [AC_MSG_WARN([Cannot find libjansson])
        AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some LDFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
-jansson_happy=0
-AC_TRY_COMPILE([#include <jansson.h>],
-    [#if JANSSON_MAJOR_VERSION < 2
-     #error Require version earlier than 2.3
-     #endif
-     #if JANSSON_MAJOR_VERSION == 2 && JANSSON_MINOR_VERSION < 3
-     #error Require version earlier than 2.3
-     #endif
-     ],
-    [jansson_happy=1],
-    [jansson_happy=0])
-AS_IF([test $jansson_happy -eq 0],
-      [AC_MSG_WARN([Version of Jansson is too old.])
+AC_MSG_CHECKING([for Jansson version >= 2.3])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <jansson.h>]],
+      [[
+#if JANSSON_MAJOR_VERSION < 2
+#error "Jansson major version is too old"
+#endif
+#if JANSSON_MAJOR_VERSION == 2 && JANSSON_MINOR_VERSION < 3
+#error "Jansson minor version is too old"
+#endif
+      ]])],
+      [AC_MSG_RESULT([good])],
+      [AC_MSG_RESULT([bad])
+       AC_MSG_WARN([Version of Jansson is too old.])
        AC_MSG_WARN([We require version 2.3 or later.])
        AC_MSG_ERROR([Cannot continue])])
 
@@ -212,16 +208,12 @@ AS_IF([test "$with_hwloc" = "yes" -o -z "$with_hwloc"],
               AC_MSG_ERROR([Cannot continue])])
       ])
 
-hwloc_happy=0
-AC_CHECK_HEADER([hwloc.h], [hwloc_happy=1])
-AS_IF([test $hwloc_happy -eq 0],
+AC_CHECK_HEADER([hwloc.h], [:],
       [AC_MSG_WARN([Cannot find hwloc.h])
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some CPPFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
-hwloc_happy=0
-AC_CHECK_LIB([hwloc], [hwloc_topology_init], [hwloc_happy=1])
-AS_IF([test $hwloc_happy -eq 0],
+AC_CHECK_LIB([hwloc], [hwloc_topology_init], [:],
       [AC_MSG_WARN([Cannot find libhwloc])
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some LDFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
