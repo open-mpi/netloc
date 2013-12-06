@@ -149,14 +149,14 @@ AS_IF([test "$with_jansson" = "yes" -o -z "$with_jansson"],
 
 jansson_happy=0
 AC_CHECK_HEADER([jansson.h], [jansson_happy=1])
-AS_IF([test "$jansson_happy" = "0"],
+AS_IF([test $jansson_happy -eq 0],
       [AC_MSG_WARN([Cannot find jansson.h])
        AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some CPPFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
 jansson_happy=0
 AC_CHECK_LIB([jansson], [json_true], [jansson_happy=1])
-AS_IF([test "$jansson_happy" = "0"],
+AS_IF([test $jansson_happy -eq 0],
       [AC_MSG_WARN([Cannot find libjansson])
        AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some LDFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
@@ -172,7 +172,7 @@ AC_TRY_COMPILE([#include <jansson.h>],
      ],
     [jansson_happy=1],
     [jansson_happy=0])
-AS_IF([test "$jansson_happy" = "0"],
+AS_IF([test $jansson_happy -eq 0],
       [AC_MSG_WARN([Version of Jansson is too old.])
        AC_MSG_WARN([We require version 2.3 or later.])
        AC_MSG_ERROR([Cannot continue])])
@@ -214,14 +214,14 @@ AS_IF([test "$with_hwloc" = "yes" -o -z "$with_hwloc"],
 
 hwloc_happy=0
 AC_CHECK_HEADER([hwloc.h], [hwloc_happy=1])
-AS_IF([test "$hwloc_happy" = "0"],
+AS_IF([test $hwloc_happy -eq 0],
       [AC_MSG_WARN([Cannot find hwloc.h])
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some CPPFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
 hwloc_happy=0
 AC_CHECK_LIB([hwloc], [hwloc_topology_init], [hwloc_happy=1])
-AS_IF([test "$hwloc_happy" = "0"],
+AS_IF([test $hwloc_happy -eq 0],
       [AC_MSG_WARN([Cannot find libhwloc])
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some LDFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
