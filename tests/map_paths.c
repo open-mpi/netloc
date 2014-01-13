@@ -19,21 +19,25 @@ int main(int argc, char *argv[])
   netloc_map_paths_t paths;
   unsigned nr_paths, nr_edges, i, j;
   struct netloc_map_edge_s *edges;
-  unsigned flags = 0;
+  unsigned flags = 0x3;
   char *path;
   int err;
 
   if (argc > 2) {
     if (!strcmp(argv[1], "--flags")) {
-      flags = atoi(argv[2]);
+      flags = (unsigned) strtoul(argv[2], NULL, 0);
       argc -= 2;
       argv += 2;
     }
   }
 
   if (argc < 6) {
-    fprintf(stderr, "%s [--flags N] <datadir> <srcserver> <srcpu> <dstserver> <dstpu>\n", argv[0]);
-    fprintf(stderr, "Example: %s examples/cisco2 dell042 1 dell043 7\n", argv[0]);
+    fprintf(stderr, "%s [options] <datadir> <srcserver> <srcpu> <dstserver> <dstpu>\n", argv[0]);
+    fprintf(stderr, "Example: %s mynetlocdata server2 1 server3 7\n", argv[0]);
+    fprintf(stderr, "  Loads netloc map from 'mynetlocdata' directory and display all paths\n");
+    fprintf(stderr, "  from server 'server2' PU #1 to server 'server3' PU #7.\n");
+    fprintf(stderr, "Options:\n");
+    fprintf(stderr, "  --flags N    Use value N as map paths flags. Default is 3 which displays all edges.\n");
     exit(EXIT_FAILURE);
   }
 
