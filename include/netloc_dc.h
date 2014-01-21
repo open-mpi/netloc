@@ -37,6 +37,10 @@
 
 #include <netloc.h>
 
+/** \defgroup netloc_dc_api Data Collection API
+ * @{
+ */
+
 /**********************************************************************
  * Enumerated types
  **********************************************************************/
@@ -259,5 +263,7 @@ NETLOC_DECLSPEC int netloc_dc_compute_path_between_nodes(netloc_data_collection_
  *
  */
 NETLOC_DECLSPEC void netloc_dc_pretty_print(netloc_data_collection_handle_t *handle);
+
+/** @} */
 
 #endif // _NETLOC_DC_H_

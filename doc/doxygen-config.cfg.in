@@ -1,0 +1,19 @@
+# Copyright © 2010-2014 Inria.  All rights reserved.
+# Copyright © 2009 Cisco Systems, Inc.  All rights reserved.
+# See COPYING in top-level directory.
+
+# See big comments in doxygen.cfg about the purpose of this file.
+
+PROJECT_NUMBER = @PACKAGE_VERSION@
+
+INPUT          = \
+		@top_srcdir@/doc/netloc.doxy \
+		@top_srcdir@/include/netloc.h \
+		@top_srcdir@/include/netloc_dc.h \
+		@top_srcdir@/include/netloc_map.h
+
+EXAMPLE_PATH   = @top_srcdir@/doc
+
+IMAGE_PATH     = @top_srcdir@/doc/images images
+
+INCLUDE_PATH   = @top_srcdir@/doc

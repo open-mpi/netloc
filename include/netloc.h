@@ -29,6 +29,9 @@
 extern "C" {
 #endif
 
+/** \defgroup netloc_api Netloc API
+ * @{
+ */
 
 /**********************************************************************
  * Enumerated types
@@ -1369,5 +1372,7 @@ NETLOC_DECLSPEC int netloc_topology_export_gexf(netloc_topology_t topology, cons
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+/** @} */
 
 #endif // _NETLOC_H_

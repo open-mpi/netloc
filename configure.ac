@@ -1,8 +1,9 @@
 # -*- shell-script -*-
 #
-# Copyright (c) 2013 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011-2013 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2013      University of Wisconsin-La Crosse.
 #                         All rights reserved.
+# Copyright (c) 2014      Inria.  All rights reserved.
 #
 # $COPYRIGHT$
 # 
@@ -218,6 +219,85 @@ AC_CHECK_LIB([hwloc], [hwloc_topology_init], [:],
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some LDFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
+
+#
+# SED_I
+# Linux and OS X take different sed arguments.
+#
+AC_PROG_SED
+AC_MSG_CHECKING([if the sed -i option requires an argument])
+    rm -f conftest
+    cat > conftest <<EOF
+hello
+EOF
+$SED -i -e s/hello/goodbye/ conftest 2> /dev/null
+AS_IF([test -f conftest-e],
+      [SED_I="$SED -i ''"
+       AC_MSG_RESULT([yes])],
+      [SED_I="$SED -i"
+       AC_MSG_RESULT([no])])
+rm -f conftest conftest-e
+AC_SUBST([SED_I])
+
+#
+# We only build documentation if this is a developer checkout.
+# Distribution tarballs just install pre-built documentation that was
+# included in the tarball.
+#
+
+AC_ARG_ENABLE([doxygen],
+    [AC_HELP_STRING([--enable-doxygen],
+                    [enable support for building Doxygen documentation (note that this option is ONLY relevant in developer builds; Doxygen documentation is pre-built for tarball builds and this option is therefore ignored)])])
+
+# if --disable/enable-doxygen wasn't given,
+# decide based on the tree being a developer build or not
+AC_MSG_CHECKING([if this is a developer build])
+AS_IF([test ! -d "$srcdir/.git"],
+      [AC_MSG_RESULT([no (doxygen generation is optional)])
+       test "x$enable_doxygen" = x && enable_doxygen=no],
+      [AC_MSG_RESULT([yes])
+       test "x$enable_doxygen" = x && enable_doxygen=yes])
+
+AC_ARG_VAR([DOXYGEN], [Location of the doxygen program (required for building the netloc doxygen documentation)])
+AC_PATH_TOOL([DOXYGEN], [doxygen])
+NETLOC_DOXYGEN_VERSION=`doxygen --version 2> /dev/null`
+
+AC_ARG_VAR([PDFLATEX], [Location of the pdflatex program (required for building the netloc doxygen documentation)])
+AC_PATH_TOOL([PDFLATEX], [pdflatex])
+    
+AC_ARG_VAR([MAKEINDEX], [Location of the makeindex program (required for building the netloc doxygen documentation)])
+AC_PATH_TOOL([MAKEINDEX], [makeindex])
+    
+AC_ARG_VAR([GS], [Location of the gs program (required for building the netloc doxygen documentation)])
+AC_PATH_TOOL([GS], [gs])
+
+AC_MSG_CHECKING([if can build doxygen docs])
+AS_IF([test "x$DOXYGEN" != "x" -a "x$PDFLATEX" != "x" -a "x$MAKEINDEX" != "x" -a "x$GS" != "x"],
+      [netloc_generate_doxs=yes], [netloc_generate_doxs=no])
+AC_MSG_RESULT([$netloc_generate_doxs])
+AS_IF([test "x$netloc_generate_doxs" = xyes -a "x$NETLOC_DOXYGEN_VERSION" = x1.6.2],
+      [netloc_generate_doxs="no"; AC_MSG_WARN([doxygen 1.6.2 has broken short name support, disabling])])
+
+# If any one of the above tools is missing, we will refuse to make dist.
+AC_MSG_CHECKING([if will build doxygen docs])
+AS_IF([test "x$netloc_generate_doxs" = "xyes" -a "x$enable_doxygen" != "xno"],
+      [], [netloc_generate_doxs=no])
+AC_MSG_RESULT([$netloc_generate_doxs])
+    
+# See if we want to install the doxygen docs
+AC_MSG_CHECKING([if will install doxygen docs])
+AS_IF([test "x$netloc_generate_doxs" = "xyes" -o \
+       -f "$srcdir/doc/doxygen-doc/man/man3/netloc_attach.3" -a \
+       -f "$srcdir/doc/doxygen-doc/netloc.pdf"],
+      [netloc_install_doxs=yes],
+      [netloc_install_doxs=no])
+AC_MSG_RESULT([$netloc_install_doxs])
+
+AM_CONDITIONAL([NETLOC_BUILD_DOXYGEN],
+               [test "x$netloc_generate_doxs" = "xyes"])
+AM_CONDITIONAL([NETLOC_INSTALL_DOXYGEN], 
+               [test "x$netloc_install_doxs" = "xyes"])
+
 #
 # Setup libtool, but disable C++, F77, Java and Windows Resource
 # Compiler support -- we don't need that stuff.
@@ -238,6 +318,8 @@ AC_CONFIG_FILES([
    tools/lsnettopo/Makefile
    tools/gather_ib/Makefile
    tests/Makefile
+   doc/Makefile
+   doc/doxygen-config.cfg
 ])
 
 # Party on

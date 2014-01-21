@@ -22,6 +22,10 @@ extern "C" {
 }
 #endif
 
+/** \defgroup netloc_map_api Netloc Map API
+ * @{
+ */
+
 typedef void * netloc_map_t;
 typedef void * netloc_map_server_t;
 typedef void * netloc_map_port_t;
@@ -197,6 +201,8 @@ NETLOC_DECLSPEC int netloc_map_dump(netloc_map_t map);
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */
 
 /*
  * Ideas
