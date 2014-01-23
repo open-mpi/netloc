@@ -214,6 +214,19 @@ AC_CHECK_HEADER([hwloc.h], [:],
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some CPPFLAGS?])
        AC_MSG_ERROR([Cannot continue])])
 
+AC_MSG_CHECKING([for hwloc version >= 1.4.2])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <hwloc.h>]],
+[[
+#if HWLOC_API_VERSION <= 0x00010400
+#error "HWLOC_API_VERSION is less than 0x00010400"
+#endif
+]])],
+[AC_MSG_RESULT([good])],
+[AC_MSG_RESULT([bad])
+AC_MSG_WARN([Version of hwloc is too old.])
+AC_MSG_WARN([We require version 1.4.2 or later.])
+AC_MSG_ERROR([Cannot continue])])
+
 AC_CHECK_LIB([hwloc], [hwloc_topology_init], [:],
       [AC_MSG_WARN([Cannot find libhwloc])
        AC_MSG_WARN([Perhaps you need to specify --with-hwloc, or some LDFLAGS?])
