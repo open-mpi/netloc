@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# Copyright (c) 2011-2013 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2011-2014 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2013      University of Wisconsin-La Crosse.
 #                         All rights reserved.
 # Copyright (c) 2014      Inria.  All rights reserved.
@@ -322,6 +322,7 @@ LT_LANG([CXX])
 
 AC_CONFIG_FILES([
    Makefile
+   netloc.pc
 
    include/Makefile
    src/Makefile

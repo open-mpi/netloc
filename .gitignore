@@ -32,7 +32,7 @@ test-suite.log
 /autom4te.cache
 /aclocal.m4
 /tags
-/hwloc.pc
+/netloc.pc
 /libtool
 
 /include/netloc/autogen/config.h
