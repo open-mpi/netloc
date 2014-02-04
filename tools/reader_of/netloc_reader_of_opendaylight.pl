@@ -179,17 +179,40 @@ sub _parse_network_topology {
                 $bw = sprintf("%d", $edges_hash{"properties"}{"bandwidth"}{"value"} );
             }
 
+            my $desc = " ";
+            if( exists $edges_hash{"properties"}{"name"} ) {
+                $desc = $edges_hash{"properties"}{"name"};
+            }
+
+            # From what I can tell this is not supposed to be a SW <-> SW edge, but
+            # is just another reference for a switch to host connection.
+            # Really just want to ignore these edges for now, and pick them up below
+            # JJH: Unfortunately, that means we do not get the bandwidth and description information.
+            my $src_type = "SW";
+            if( $edges_hash{"edge"}{"headNodeConnector"}{"type"} eq "PR" ) {
+                $dest_port = "-1";
+                $src_type = "CA";
+                next;
+            }
+
+            my $dest_type = "SW";
+            if( $edges_hash{"edge"}{"tailNodeConnector"}{"type"} eq "PR" ) {
+                $dest_port = "-1";
+                $dest_type = "CA";
+                next;
+            }
+
             push(@{ $nodes{ $src_dpid }->connections->{ $dest_dpid } },
                  new Edge(
                      port_from      => $src_dpid,
                      port_id_from   => sprintf("%d", $src_port),
-                     port_type_from => "SW",
+                     port_type_from => $src_type,
                      width          => $default_width,
                      speed          => $bw,
                      port_to        => $dest_dpid,
                      port_id_to     => sprintf("%d", $dest_port),
-                     port_type_to   => "SW",
-                     description    => " "
+                     port_type_to   => $dest_type,
+                     description    => $desc
                  )
                 );
         }
