@@ -408,7 +408,6 @@ static int parse_args(int argc, char ** argv) {
     printf("  Controller       : %s\n", controller);
     printf("  Address:Port     : %s\n", uri_address);
     printf("  Username         : %s\n", (NULL == auth_username ? "<none>" : auth_username) );
-    printf("  Password         : %s\n", (NULL == auth_password ? "<none>" : auth_password) );
 
     return ret;
 }
