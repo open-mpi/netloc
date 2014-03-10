@@ -17,7 +17,7 @@
 AC_INIT([netloc],
         [m4_normalize(esyscmd([config/netloc_get_version.sh VERSION --version]))],
         [http://www.open-mpi.org/projects/netloc/], [netloc])
-AC_LANG([C++])
+AC_LANG([C])
 AC_PREREQ(2.63)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
