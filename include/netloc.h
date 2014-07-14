@@ -84,7 +84,7 @@ static inline netloc_network_type_t netloc_encode_network_type(const char * str_
 /**
  * Decode the network type
  *
- * \param A valid member of the netloc_network_type_t type
+ * \param net_type A valid member of the netloc_network_type_t type
  *
  * Returns
  *   NULL if the type is invalid
@@ -105,7 +105,7 @@ static inline const char * netloc_decode_network_type(netloc_network_type_t net_
 /**
  * Decode the network type into a human readable string
  *
- * \param A valid member of the netloc_network_type_t type
+ * \param net_type A valid member of the netloc_network_type_t type
  *
  * Returns
  *   A string for that netloc_network_type_t type
@@ -160,7 +160,7 @@ static inline netloc_node_type_t netloc_encode_node_type(const char * str_val) {
 /**
  * Decode the node type
  *
- * \param A valid member of the netloc_node_type_t type
+ * \param node_type A valid member of the netloc_node_type_t type
  *
  * Returns
  *   NULL if the type is invalid
@@ -181,7 +181,7 @@ static inline const char * netloc_decode_node_type(netloc_node_type_t node_type)
 /**
  * Decode the node type into a human readable string
  *
- * \param A valid member of the netloc_node_type_t type
+ * \param node_type A valid member of the netloc_node_type_t type
  *
  * Returns
  *   NULL if the type is invalid
@@ -289,6 +289,7 @@ typedef struct netloc_node_t netloc_node_t;
 
 /**
  * \brief Netloc Edge Type
+ *
  * Represents the concept of a directed edge within a network graph.
  *
  * \note We do not point to the netloc_node_t structure directly to 
@@ -336,6 +337,7 @@ typedef struct netloc_edge_t netloc_edge_t;
 
 /**
  * \brief Netloc Node Type
+ *
  * Represents the concept of a node (a.k.a., vertex, endpoint) within a network
  * graph. This could be a server or a network switch. The \ref node_type parameter
  * will distinguish the exact type of node this represents in the graph.
@@ -496,7 +498,7 @@ NETLOC_DECLSPEC netloc_dt_lookup_table_iterator_t netloc_dt_lookup_table_iterato
 /**
  * Destructor for a lookup table iterator
  *
- * \param table A valid lookup table iterator handle
+ * \param hti A valid lookup table iterator handle
  *
  * Returns
  *   NETLOC_SUCCESS on success

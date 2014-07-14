@@ -24,7 +24,10 @@ check_PROGRAMS = \
 	test_map_hwloc \
 	hwloc_compress \
 	lsmap \
-	map_paths
+	map_paths \
+	netloc_hello \
+	netloc_nodes \
+	netloc_all
 
 LDADD = $(top_builddir)/src/libnetloc.la
 

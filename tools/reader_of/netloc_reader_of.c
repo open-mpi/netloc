@@ -96,13 +96,15 @@ static char * auth_password = NULL;
  * Valid controllers
  * The short names must match the corresponding perl script
  */
-static int num_valid_controllers = 3;
+static int num_valid_controllers = 4;
 static int cur_controller_idx = -1;
-const char * valid_controllers[3] = {"noop", // Must be index 0
+const char * valid_controllers[4] = {"noop", // Must be index 0
                                      "floodlight",
-                                     "opendaylight"};
-const char * valid_controllers_cmds[3] = {"true",
+                                     "opendaylight",
+                                     "xnc"};
+const char * valid_controllers_cmds[4] = {"true",
                                           "netloc_reader_of_floodlight",
+                                          "netloc_reader_of_opendaylight",
                                           "netloc_reader_of_opendaylight"};
 
 /*

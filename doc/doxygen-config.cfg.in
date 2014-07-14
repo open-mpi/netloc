@@ -12,7 +12,7 @@ INPUT          = \
 		@top_srcdir@/include/netloc_dc.h \
 		@top_srcdir@/include/netloc_map.h
 
-EXAMPLE_PATH   = @top_srcdir@/doc
+EXAMPLE_PATH   = @top_srcdir@/tests
 
 IMAGE_PATH     = @top_srcdir@/doc/images images
 

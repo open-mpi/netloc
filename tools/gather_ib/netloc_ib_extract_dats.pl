@@ -15,21 +15,25 @@ use Getopt::Long;
 my $rawdir = "./ib-raw";
 my $outdir = "./netloc";
 my $verbose;
+my $help;
 
 &Getopt::Long::Configure("bundling");
 my $ok = Getopt::Long::GetOptions(
         "out-dir|o=s" => \$outdir,
         "raw-dir|r=s" => \$rawdir,
-        "verbose|v" => \$verbose
+        "verbose|v" => \$verbose,
+        "help|h" => \$help
     );
 
-if (!$ok or !defined $rawdir) {
+if (!$ok or !defined $rawdir or defined($help) ) {
   print "Input directory with raw IB data must be specified with\n";
   print " --raw-dir <dir> (default is ./ib-raw)\n";
   print "Output directory for netloc data can be specified with\n";
   print " --out-dir <dir> (default is ./netloc)\n";
   print "Verbose\n";
   print " --verbose | -v\n";
+  print "Help\n";
+  print " --help | -h\n";
   exit -1;
 }
 
