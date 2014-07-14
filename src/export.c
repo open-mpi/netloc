@@ -32,8 +32,8 @@ static int netloc_topology_export_gexf_edge(const netloc_edge_t *edge, FILE *fh)
 int netloc_topology_export_graphml(struct netloc_topology * topology, const char* filename) {
     int ret, exit_status = NETLOC_SUCCESS;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table *nodes = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_node_t *node = NULL;
 
     int i;
@@ -157,8 +157,8 @@ int netloc_topology_export_graphml(struct netloc_topology * topology, const char
 int netloc_topology_export_gexf(struct netloc_topology * topology, const char * filename) {
     int ret, exit_status = NETLOC_SUCCESS;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table *nodes = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_node_t *node = NULL;
 
     int i;

@@ -27,6 +27,7 @@
 #include <jansson.h>
 
 #include "netloc_dc.h"
+#include "private/netloc.h"
 
 #include "perl_json_support.h"
 
@@ -72,7 +73,7 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle);
 static int run_routes_parser();
 static int process_logical_paths(netloc_data_collection_handle_t *dc_handle);
 static int process_logical_paths_between_nodes(netloc_data_collection_handle_t *handle,
-                                               netloc_dt_lookup_table_t *all_routes,
+                                               netloc_dt_lookup_table_t all_routes,
                                                netloc_node_t *src_node,
                                                netloc_node_t *dest_node,
                                                int *num_edges,
@@ -457,8 +458,8 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle)
     int num_edges = 0;
     netloc_edge_t **edges = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_dst = NULL;
+    netloc_dt_lookup_table_iterator_t hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t hti_dst = NULL;
     netloc_node_t *cur_src_node = NULL;
     netloc_node_t *cur_dst_node = NULL;
 
@@ -584,14 +585,14 @@ static int process_logical_paths(netloc_data_collection_handle_t *dc_handle)
     json_t * value = NULL;
     json_t * value2 = NULL;
 
-    netloc_dt_lookup_table_t *all_routes = NULL;
-    netloc_dt_lookup_table_t *tmp_routes = NULL;
+    netloc_dt_lookup_table_t all_routes = NULL;
+    netloc_dt_lookup_table_t tmp_routes = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
-    netloc_dt_lookup_table_iterator_t *hti2 = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
+    netloc_dt_lookup_table_iterator_t hti2 = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_dst = NULL;
+    netloc_dt_lookup_table_iterator_t hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t hti_dst = NULL;
     netloc_node_t *cur_src_node = NULL;
     netloc_node_t *cur_dst_node = NULL;
 
@@ -741,7 +742,7 @@ static int process_logical_paths(netloc_data_collection_handle_t *dc_handle)
         if( NULL == key ) {
             break;
         }
-        tmp_routes = (netloc_dt_lookup_table_t*)netloc_lookup_table_access(all_routes, key);
+        tmp_routes = (netloc_dt_lookup_table_t)netloc_lookup_table_access(all_routes, key);
 
         hti2 = netloc_dt_lookup_table_iterator_t_construct( tmp_routes );
         while( !netloc_lookup_table_iterator_at_end(hti2) ) {
@@ -781,7 +782,7 @@ static int process_logical_paths(netloc_data_collection_handle_t *dc_handle)
 }
 
 static int process_logical_paths_between_nodes(netloc_data_collection_handle_t *handle,
-                                               netloc_dt_lookup_table_t *all_routes,
+                                               netloc_dt_lookup_table_t all_routes,
                                                netloc_node_t *src_node,
                                                netloc_node_t *dest_node,
                                                int *num_edges,
@@ -790,7 +791,7 @@ static int process_logical_paths_between_nodes(netloc_data_collection_handle_t *
     int exit_status = NETLOC_SUCCESS;
     netloc_node_t *cur_node = NULL;
     netloc_edge_t *cur_edge = NULL;
-    netloc_dt_lookup_table_t *cur_routes = NULL;
+    netloc_dt_lookup_table_t cur_routes = NULL;
     char * output_port = NULL;
     int i, len;
 
@@ -838,7 +839,7 @@ static int process_logical_paths_between_nodes(netloc_data_collection_handle_t *
         /*
          * Get output port from this switch for the LID we are tracing
          */
-        cur_routes = (netloc_dt_lookup_table_t*)netloc_lookup_table_access(all_routes, cur_node->physical_id);
+        cur_routes = (netloc_dt_lookup_table_t)netloc_lookup_table_access(all_routes, cur_node->physical_id);
         if( NULL == cur_routes ) {
             fprintf(stderr, "Error: No routing information for node %s\n", netloc_pretty_print_node_t(cur_node));
             exit_status = NETLOC_ERROR;
@@ -910,8 +911,8 @@ static int check_dat_files() {
     char *search_uri = NULL;
     netloc_topology_t topology;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 

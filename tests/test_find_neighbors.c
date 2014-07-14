@@ -23,7 +23,7 @@ int main(void) {
     netloc_network_t *network = NULL;
     char *search_uri = NULL;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
     netloc_node_t *node = NULL;
 
     int num_edges;

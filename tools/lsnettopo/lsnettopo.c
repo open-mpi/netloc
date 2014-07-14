@@ -284,9 +284,9 @@ static int parse_args(int argc, char ** argv) {
 static int display_topo_screen(netloc_topology_t topology, netloc_network_t *network) {
     int ret, exit_status = NETLOC_SUCCESS;
     int i;
-    netloc_dt_lookup_table_t *hosts_nodes = NULL;
-    netloc_dt_lookup_table_t *switches_nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t hosts_nodes = NULL;
+    netloc_dt_lookup_table_t switches_nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
     int num_edges;

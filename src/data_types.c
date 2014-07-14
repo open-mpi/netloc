@@ -702,7 +702,7 @@ json_t* netloc_dt_node_t_json_encode(netloc_node_t *node)
     return json_node;
 }
 
-netloc_node_t* netloc_dt_node_t_json_decode(netloc_dt_lookup_table_t *edge_table, json_t *json_node)
+netloc_node_t* netloc_dt_node_t_json_decode(struct netloc_dt_lookup_table *edge_table, json_t *json_node)
 {
     netloc_node_t *node = NULL;
     size_t i;
@@ -770,9 +770,9 @@ netloc_node_t* netloc_dt_node_t_json_decode(netloc_dt_lookup_table_t *edge_table
 // NOTE: This assumes that the "paths" is a NULL terminated array of
 //       edge_ids. Which it will be when called from the data
 //       collector. Otherwise, it will be netloc_edge_t pointers.
-json_t* netloc_dt_node_t_json_encode_paths(netloc_node_t *node, netloc_dt_lookup_table_t *paths)
+json_t* netloc_dt_node_t_json_encode_paths(netloc_node_t *node, struct netloc_dt_lookup_table *paths)
 {
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     const char * key = NULL;
     int *path = NULL;
 
@@ -808,9 +808,9 @@ json_t* netloc_dt_node_t_json_encode_paths(netloc_node_t *node, netloc_dt_lookup
     return json_all_paths;
 }
 
-netloc_dt_lookup_table_t * netloc_dt_node_t_json_decode_paths(netloc_dt_lookup_table_t *edge_table, json_t *json_all_paths)
+struct netloc_dt_lookup_table * netloc_dt_node_t_json_decode_paths(struct netloc_dt_lookup_table *edge_table, json_t *json_all_paths)
 {
-    netloc_dt_lookup_table_t * ht = NULL;
+    struct netloc_dt_lookup_table * ht = NULL;
     size_t size = 0;
 
     const char * key1 = NULL;
@@ -912,7 +912,7 @@ int netloc_dt_node_t_destruct(netloc_node_t * node)
 {
     int i;
     void **path = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
 
     node->physical_id_int = 0;
 

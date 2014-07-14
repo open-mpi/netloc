@@ -25,6 +25,7 @@
 #include <jansson.h>
 
 #include "netloc_dc.h"
+#include "private/netloc.h"
 
 #include "perl_json_support.h"
 
@@ -489,8 +490,8 @@ static int compute_physical_paths(netloc_data_collection_handle_t *dc_handle)
     int num_edges = 0;
     netloc_edge_t **edges = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_dst = NULL;
+    netloc_dt_lookup_table_iterator_t hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t hti_dst = NULL;
     netloc_node_t *cur_src_node = NULL;
     netloc_node_t *cur_dst_node = NULL;
 
@@ -602,8 +603,8 @@ static int check_dat_files() {
     char *search_uri = NULL;
     netloc_topology_t topology;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 

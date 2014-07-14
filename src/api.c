@@ -24,7 +24,7 @@
  *   NETLOC_SUCCESS on success
  *   NETLOC_ERROR otherwise
  */
-static int find_matching_nodes(struct netloc_topology * topology, netloc_dt_lookup_table_t ** nodes, netloc_node_type_t *nt);
+static int find_matching_nodes(struct netloc_topology * topology, struct netloc_dt_lookup_table ** nodes, netloc_node_type_t *nt);
 
 
 /*********************************************************************/
@@ -37,18 +37,18 @@ netloc_network_t* netloc_access_network_ref(struct netloc_topology * topology)
     return topology->network;
 }
 
-int netloc_get_all_nodes(struct netloc_topology * topology, netloc_dt_lookup_table_t ** nodes)
+int netloc_get_all_nodes(struct netloc_topology * topology, struct netloc_dt_lookup_table ** nodes)
 {
     return find_matching_nodes(topology, nodes, NULL);
 }
 
-int netloc_get_all_switch_nodes(struct netloc_topology * topology, netloc_dt_lookup_table_t ** switches)
+int netloc_get_all_switch_nodes(struct netloc_topology * topology, struct netloc_dt_lookup_table ** switches)
 {
     netloc_node_type_t nt = NETLOC_NODE_TYPE_SWITCH;
     return find_matching_nodes(topology, switches, &nt);
 }
 
-int netloc_get_all_host_nodes(struct netloc_topology * topology, netloc_dt_lookup_table_t ** hosts)
+int netloc_get_all_host_nodes(struct netloc_topology * topology, struct netloc_dt_lookup_table ** hosts)
 {
     netloc_node_type_t nt = NETLOC_NODE_TYPE_HOST;
     return find_matching_nodes(topology, hosts, &nt);
@@ -146,7 +146,7 @@ int netloc_get_path(const netloc_topology_t topology,
 /*********************************************************************
  * Support Functions
  *********************************************************************/
-static int find_matching_nodes(struct netloc_topology * topology, netloc_dt_lookup_table_t ** nodes, netloc_node_type_t *nt)
+static int find_matching_nodes(struct netloc_topology * topology, struct netloc_dt_lookup_table ** nodes, netloc_node_type_t *nt)
 {
     int ret;
     int i;

@@ -86,12 +86,12 @@ int main(int argc, char *argv[])
     printf("Subnet type %s id %s\n",
 	   type, net->subnet_id);
 
-    netloc_dt_lookup_table_t *nodes;
+    netloc_dt_lookup_table_t nodes;
     err = netloc_get_all_host_nodes(ntopo, &nodes);
     if (err)
       continue;
 
-    netloc_dt_lookup_table_iterator_t *iter = netloc_dt_lookup_table_iterator_t_construct(nodes);
+    netloc_dt_lookup_table_iterator_t iter = netloc_dt_lookup_table_iterator_t_construct(nodes);
     while( !netloc_lookup_table_iterator_at_end(iter) ) {
       const char *key;
       netloc_node_t *nnode;

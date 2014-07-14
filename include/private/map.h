@@ -39,7 +39,7 @@ struct netloc_map__subnet {
   netloc_network_type_t type;
 
   int port_by_id_ready;
-  netloc_dt_lookup_table_t port_by_id;
+  struct netloc_dt_lookup_table port_by_id;
 
   struct netloc_map__subnet *prev, *next;
 
@@ -82,12 +82,12 @@ struct netloc_map {
   unsigned server_ports_nr; /* needed during build, to create large-enough hash tables */
 
   char *hwloc_xml_path;
-  netloc_dt_lookup_table_t server_by_name;
+  struct netloc_dt_lookup_table server_by_name;
   struct netloc_map__server *server_first, *server_last;
   unsigned servers_nr;
 
   char *netloc_data_path;
-  netloc_dt_lookup_table_t subnet_by_id[NETLOC_NETWORK_TYPE_INVALID]; /* enough room for existing types */
+  struct netloc_dt_lookup_table subnet_by_id[NETLOC_NETWORK_TYPE_INVALID]; /* enough room for existing types */
   struct netloc_map__subnet *subnet_first, *subnet_last;
   unsigned subnets_nr;
 

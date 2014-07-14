@@ -9,6 +9,7 @@
 
 #include <netloc.h>
 #include <netloc_map.h>
+#include <private/netloc.h>
 #include <private/map.h>
 
 #include <stdlib.h>

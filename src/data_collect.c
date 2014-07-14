@@ -68,7 +68,7 @@ netloc_data_collection_handle_t * netloc_dt_data_collection_handle_t_construct()
 
 int netloc_dt_data_collection_handle_t_destruct(netloc_data_collection_handle_t *handle)
 {
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_node_t *cur_node = NULL;
     netloc_edge_t *cur_edge = NULL;
 
@@ -267,7 +267,7 @@ int netloc_dc_close(netloc_data_collection_handle_t *handle)
 
 
     /******************** Physical Path Data **************************/
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_node_t *cur_node = NULL;
 
     /*
@@ -616,11 +616,11 @@ netloc_node_t * netloc_dc_get_node_by_physical_id(netloc_data_collection_handle_
 void netloc_dc_pretty_print(netloc_data_collection_handle_t *handle)
 {
     int p;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     const char * key = NULL;
     netloc_edge_t **path = NULL;
     int path_len;
-    netloc_dt_lookup_table_iterator_t *htin = NULL;
+    struct netloc_dt_lookup_table_iterator *htin = NULL;
     netloc_node_t *cur_node = NULL;
 
     htin = netloc_dt_lookup_table_iterator_t_construct(handle->node_list);

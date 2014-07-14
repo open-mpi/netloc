@@ -75,10 +75,10 @@ struct netloc_data_collection_handle_t {
     char * filename_logical_paths;
 
     /** Lookup table for all node information */
-    netloc_dt_lookup_table_t *node_list;
+    netloc_dt_lookup_table_t node_list;
 
     /** Lookup table for all edge information */
-    netloc_dt_lookup_table_t *edges;
+    netloc_dt_lookup_table_t edges;
 
     /** JSON Object for nodes */
     json_t *node_data;

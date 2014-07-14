@@ -56,11 +56,11 @@ int netloc_lookup_table_entry_t_destruct(netloc_lookup_table_entry_t* hte, int d
 /**********************************************************************
  * Function Definitions
  **********************************************************************/
-netloc_dt_lookup_table_iterator_t *netloc_dt_lookup_table_iterator_t_construct(netloc_dt_lookup_table_t *ht)
+struct netloc_dt_lookup_table_iterator *netloc_dt_lookup_table_iterator_t_construct(struct netloc_dt_lookup_table *ht)
 {
-    netloc_dt_lookup_table_iterator_t* hti = NULL;
+    struct netloc_dt_lookup_table_iterator* hti = NULL;
 
-    hti = (netloc_dt_lookup_table_iterator_t*)malloc(sizeof(netloc_dt_lookup_table_iterator_t));
+    hti = (struct netloc_dt_lookup_table_iterator*)malloc(sizeof(struct netloc_dt_lookup_table_iterator));
     if( NULL == hti ) {
         return NULL;
     }
@@ -72,7 +72,7 @@ netloc_dt_lookup_table_iterator_t *netloc_dt_lookup_table_iterator_t_construct(n
     return hti;
 }
 
-int netloc_dt_lookup_table_iterator_t_destruct(netloc_dt_lookup_table_iterator_t* hti)
+int netloc_dt_lookup_table_iterator_t_destruct(struct netloc_dt_lookup_table_iterator* hti)
 {
     if( NULL == hti ) {
         return NETLOC_SUCCESS;
@@ -86,7 +86,23 @@ int netloc_dt_lookup_table_iterator_t_destruct(netloc_dt_lookup_table_iterator_t
     return NETLOC_SUCCESS;
 }
 
-const char * netloc_lookup_table_iterator_next_key(netloc_dt_lookup_table_iterator_t* hti)
+int netloc_lookup_table_size(struct netloc_dt_lookup_table *table) {
+    if( NULL == table ) {
+        return 0;
+    } else {
+        return table->ht_used_size;
+    }
+}
+
+int netloc_lookup_table_size_alloc(struct netloc_dt_lookup_table *table) {
+    if( NULL == table ) {
+        return 0;
+    } else {
+        return table->ht_size;
+    }
+}
+
+const char * netloc_lookup_table_iterator_next_key(struct netloc_dt_lookup_table_iterator* hti)
 {
     size_t i;
 
@@ -103,7 +119,7 @@ const char * netloc_lookup_table_iterator_next_key(netloc_dt_lookup_table_iterat
     return NULL;
 }
 
-unsigned long netloc_lookup_table_iterator_next_key_int(netloc_dt_lookup_table_iterator_t* hti)
+unsigned long netloc_lookup_table_iterator_next_key_int(struct netloc_dt_lookup_table_iterator* hti)
 {
     size_t i;
 
@@ -120,7 +136,7 @@ unsigned long netloc_lookup_table_iterator_next_key_int(netloc_dt_lookup_table_i
     return 0;
 }
 
-void * netloc_lookup_table_iterator_next_entry(netloc_dt_lookup_table_iterator_t* hti)
+void * netloc_lookup_table_iterator_next_entry(struct netloc_dt_lookup_table_iterator* hti)
 {
     size_t i;
 
@@ -135,6 +151,15 @@ void * netloc_lookup_table_iterator_next_entry(netloc_dt_lookup_table_iterator_t
     hti->at_end = true;
 
     return NULL;
+}
+
+bool netloc_lookup_table_iterator_at_end(struct netloc_dt_lookup_table_iterator *hti) {
+    return hti->at_end;
+}
+
+void netloc_lookup_table_iterator_reset(struct netloc_dt_lookup_table_iterator *hti) {
+    hti->loc = 0;
+    hti->at_end = false;
 }
 
 netloc_lookup_table_entry_t *netloc_lookup_table_entry_t_construct()
@@ -186,7 +211,7 @@ int netloc_lookup_table_entry_t_destruct(netloc_lookup_table_entry_t* hte, int d
     return NETLOC_SUCCESS;
 }
 
-int netloc_dt_lookup_table_t_copy(netloc_dt_lookup_table_t *from, netloc_dt_lookup_table_t *to)
+int netloc_dt_lookup_table_t_copy(struct netloc_dt_lookup_table *from, struct netloc_dt_lookup_table *to)
 {
     size_t i;
     int dup = !(from->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
@@ -206,7 +231,7 @@ int netloc_dt_lookup_table_t_copy(netloc_dt_lookup_table_t *from, netloc_dt_look
     return NETLOC_SUCCESS;
 }
 
-int netloc_lookup_table_init(netloc_dt_lookup_table_t *ht, size_t size, unsigned long flags)
+int netloc_lookup_table_init(struct netloc_dt_lookup_table *ht, size_t size, unsigned long flags)
 {
     size_t i;
 
@@ -230,7 +255,7 @@ int netloc_lookup_table_init(netloc_dt_lookup_table_t *ht, size_t size, unsigned
     return NETLOC_SUCCESS;
 }
 
-int netloc_lookup_table_destroy(netloc_dt_lookup_table_t *ht)
+int netloc_lookup_table_destroy(struct netloc_dt_lookup_table *ht)
 {
     size_t i;
     int dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
@@ -253,7 +278,7 @@ int netloc_lookup_table_destroy(netloc_dt_lookup_table_t *ht)
     return NETLOC_SUCCESS;
 }
 
-int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, void *value)
+int netloc_lookup_table_append(struct netloc_dt_lookup_table *ht, const char *key, void *value)
 {
     unsigned long hashed_key;
     // JJH : Add hash function
@@ -262,7 +287,7 @@ int netloc_lookup_table_append(netloc_dt_lookup_table_t *ht, const char *key, vo
     return netloc_lookup_table_append_with_int(ht, key, hashed_key, value);
 }
 
-int netloc_lookup_table_append_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value)
+int netloc_lookup_table_append_with_int(struct netloc_dt_lookup_table *ht, const char *key, unsigned long key_int, void *value)
 {
     int dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
     size_t i, a;
@@ -313,7 +338,7 @@ int netloc_lookup_table_append_with_int(netloc_dt_lookup_table_t *ht, const char
     return NETLOC_SUCCESS;
 }
 
-void * netloc_lookup_table_access(netloc_dt_lookup_table_t *ht, const char *key)
+void * netloc_lookup_table_access(struct netloc_dt_lookup_table *ht, const char *key)
 {
     unsigned long hashed_key;
     // JJH : Add hash function
@@ -322,7 +347,7 @@ void * netloc_lookup_table_access(netloc_dt_lookup_table_t *ht, const char *key)
     return netloc_lookup_table_access_with_int(ht, key, hashed_key);
 }
 
-void * netloc_lookup_table_access_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int)
+void * netloc_lookup_table_access_with_int(struct netloc_dt_lookup_table *ht, const char *key, unsigned long key_int)
 {
     size_t i;
     int len;
@@ -353,7 +378,7 @@ void * netloc_lookup_table_access_with_int(netloc_dt_lookup_table_t *ht, const c
     return NULL;
 }
 
-int netloc_lookup_table_replace(netloc_dt_lookup_table_t *ht, const char *key, void *value)
+int netloc_lookup_table_replace(struct netloc_dt_lookup_table *ht, const char *key, void *value)
 {
     unsigned long hashed_key;
     // JJH : Add hash function
@@ -362,7 +387,7 @@ int netloc_lookup_table_replace(netloc_dt_lookup_table_t *ht, const char *key, v
     return netloc_lookup_table_replace_with_int(ht, key, hashed_key, value);
 }
 
-int netloc_lookup_table_replace_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int, void *value)
+int netloc_lookup_table_replace_with_int(struct netloc_dt_lookup_table *ht, const char *key, unsigned long key_int, void *value)
 {
     size_t i;
     int len;
@@ -394,7 +419,7 @@ int netloc_lookup_table_replace_with_int(netloc_dt_lookup_table_t *ht, const cha
     return NETLOC_SUCCESS;
 }
 
-int netloc_lookup_table_remove(netloc_dt_lookup_table_t *ht, const char *key)
+int netloc_lookup_table_remove(struct netloc_dt_lookup_table *ht, const char *key)
 {
     unsigned long hashed_key;
     // JJH : Add hash function
@@ -402,7 +427,7 @@ int netloc_lookup_table_remove(netloc_dt_lookup_table_t *ht, const char *key)
 
     return netloc_lookup_table_remove_with_int(ht, key, hashed_key);
 }
-int netloc_lookup_table_remove_with_int(netloc_dt_lookup_table_t *ht, const char *key, unsigned long key_int)
+int netloc_lookup_table_remove_with_int(struct netloc_dt_lookup_table *ht, const char *key, unsigned long key_int)
 {
     size_t i;
     int len;
@@ -450,7 +475,7 @@ int netloc_lookup_table_remove_with_int(netloc_dt_lookup_table_t *ht, const char
     return NETLOC_SUCCESS;
 }
 
-void netloc_lookup_table_pretty_print(netloc_dt_lookup_table_t *ht)
+void netloc_lookup_table_pretty_print(struct netloc_dt_lookup_table *ht)
 {
     size_t i;
 
@@ -465,11 +490,11 @@ void netloc_lookup_table_pretty_print(netloc_dt_lookup_table_t *ht)
     }
 }
 
-json_t* netloc_dt_lookup_table_t_json_encode(netloc_dt_lookup_table_t *table,
+json_t* netloc_dt_lookup_table_t_json_encode(struct netloc_dt_lookup_table *table,
                                              json_t* (*func)(const char * key, void *value))
 {
     json_t *json_lt = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     const char * key = NULL;
     void * value = NULL;
 
@@ -493,10 +518,10 @@ json_t* netloc_dt_lookup_table_t_json_encode(netloc_dt_lookup_table_t *table,
 }
 
 
-netloc_dt_lookup_table_t* netloc_dt_lookup_table_t_json_decode(json_t *json_lt,
+struct netloc_dt_lookup_table* netloc_dt_lookup_table_t_json_decode(json_t *json_lt,
                                                                void * (*func)(const char *key, json_t* json_obj))
 {
-    netloc_dt_lookup_table_t *table = NULL;
+    struct netloc_dt_lookup_table *table = NULL;
     const char * key = NULL;
     json_t     * value = NULL;
 

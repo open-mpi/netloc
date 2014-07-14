@@ -23,8 +23,8 @@ int main(void) {
     netloc_network_t *network = NULL;
     char *search_uri = NULL;
 
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 

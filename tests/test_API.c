@@ -172,8 +172,8 @@ int main(void) {
 int test_all_nodes(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 
@@ -212,8 +212,8 @@ int test_all_nodes(netloc_topology_t topology)
 int test_all_switch_nodes(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *switches = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t switches = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 
@@ -252,8 +252,8 @@ int test_all_switch_nodes(netloc_topology_t topology)
 int test_all_host_nodes(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *hosts = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t hosts = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
 
@@ -292,8 +292,8 @@ int test_all_host_nodes(netloc_topology_t topology)
 int test_all_edges(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti = NULL;
     const char * key = NULL;
     netloc_node_t *node = NULL;
     int num_edges;
@@ -348,9 +348,9 @@ int test_all_edges(netloc_topology_t topology)
 int test_get_physical_path(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_dest = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t hti_dest = NULL;
     const char * src_key = NULL;
     const char * dest_key = NULL;
     netloc_node_t *src_node = NULL;
@@ -438,9 +438,9 @@ int test_get_physical_path(netloc_topology_t topology)
 int test_get_logical_path(netloc_topology_t topology)
 {
     int ret;
-    netloc_dt_lookup_table_t *nodes = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_src = NULL;
-    netloc_dt_lookup_table_iterator_t *hti_dest = NULL;
+    netloc_dt_lookup_table_t nodes = NULL;
+    netloc_dt_lookup_table_iterator_t hti_src = NULL;
+    netloc_dt_lookup_table_iterator_t hti_dest = NULL;
     const char * src_key = NULL;
     const char * dest_key = NULL;
     netloc_node_t *src_node = NULL;

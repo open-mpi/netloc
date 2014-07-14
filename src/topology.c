@@ -46,7 +46,7 @@ int netloc_attach(struct netloc_topology ** topology_ptr, netloc_network_t netwo
 int netloc_detach(struct netloc_topology * topology)
 {
     int i;
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_edge_t *cur_edge = NULL;
 
     /*

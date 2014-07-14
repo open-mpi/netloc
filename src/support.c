@@ -27,7 +27,7 @@ void * dc_decode_edge(const char * key, json_t* json_obj);
 /**
  * Debugging function
  */
-//void check_edge_data(netloc_dt_lookup_table_t *edges);
+//void check_edge_data(struct netloc_dt_lookup_table *edges);
 
 int support_extract_filename_from_uri(const char * uri, uri_type_t *type, char **str)
 {
@@ -76,7 +76,7 @@ int support_load_json(struct netloc_topology * topology)
     json_t *json_node = NULL;
     json_t *json_edge_list = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_edge_t *cur_edge = NULL;
 
     const char * key = NULL;

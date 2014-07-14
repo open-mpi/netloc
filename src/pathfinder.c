@@ -116,7 +116,7 @@ static int compute_shortest_path_dijkstra(netloc_data_collection_handle_t *handl
     int num_rev_edges;
     netloc_edge_t **rev_edges = NULL;
 
-    netloc_dt_lookup_table_iterator_t *hti = NULL;
+    struct netloc_dt_lookup_table_iterator *hti = NULL;
     netloc_node_t *cur_node = NULL;
 
     unsigned long key_int;
