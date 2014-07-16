@@ -9,7 +9,7 @@
  *
  * $HEADER$
  *
- * This program is meant to mirror the inline examples in netloc.doxy
+ * This program searches for a specific node in a specific network.
  */
 #include "netloc.h"
 

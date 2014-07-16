@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 /** \defgroup netloc_map_api Netloc Map API
+ * \todo Brice Document this header
  * @{
  */
 

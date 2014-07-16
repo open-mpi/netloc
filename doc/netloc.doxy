@@ -1,5 +1,13 @@
 /*
+ * Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
+ *                         All rights reserved.
  *
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ * See COPYING in top-level directory.
+ *
+ * $HEADER$
  */
 /*! \mainpage Network Locality
 
@@ -497,6 +505,7 @@ InfiniBand network.
 Normal way to use this:
 * Get some hwloc outputs from some nodes (at least enough nodes to make all subnets available)
   and store them as <hostname>.xml in a single directory
+  shell$ ssh node001 lstopo ~/mycluster-data/hwloc/node001.xml
 
 * Run netloc-ib-gather-raw.pl --hwloc-dir <hwloc XML directory> --raw-dir <raw IB output directory>
   - If you cannot run the entire script as root, add --sudo to run ib* programs as root.
@@ -742,7 +751,7 @@ for a complete list.
 <!-- ********************************************* -->
 \page apireader Reader (Data Collection) API
 
-TODO
+\todo JJH Complete the Data Collection API section of the documentation
 
 <!-- ********************************************* -->
 <!-- ********************************************* -->

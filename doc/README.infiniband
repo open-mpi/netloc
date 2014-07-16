@@ -1,3 +1,11 @@
+#
+# Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
+#                         All rights reserved.
+#
+# Additional copyrights may follow.
+# See COPYING in top-level directory.
+#
+
 First you have to build netloc, install it and add netloc binary path
 to your PATH environment variable. In bash, just do:
 

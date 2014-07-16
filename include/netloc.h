@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2013      University of Wisconsin-La Crosse.
+ * Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
  *                         All rights reserved.
  *
  * $COPYRIGHT$
@@ -42,10 +42,11 @@ extern "C" {
  * \sa These are the return values from the following functions: 
  *     netloc_dt_network_t_compare, netloc_dt_edge_t_compare, netloc_dt_node_t_compare
  */
-#define NETLOC_CMP_SAME     0
-#define NETLOC_CMP_SIMILAR -1
-#define NETLOC_CMP_DIFF    -2
-
+typedef enum {
+    NETLOC_CMP_SAME    =  0,  /**< Compared as the Same */
+    NETLOC_CMP_SIMILAR = -1,  /**< Compared as Similar, but not the Same */
+    NETLOC_CMP_DIFF    = -2   /**< Compared as Different */
+} netloc_compare_type_t;
 
 /**
  * Enumerated type for the various types of supported networks
@@ -63,8 +64,7 @@ typedef enum {
  *
  * \param str_val String value to parse
  *
- * Returns
- *   A valid member of the netloc_network_type_t type
+ * \returns  A valid member of the \ref netloc_network_type_t type
  */
 static inline netloc_network_type_t netloc_encode_network_type(const char * str_val) {
     if( NULL == str_val ) {
@@ -84,11 +84,10 @@ static inline netloc_network_type_t netloc_encode_network_type(const char * str_
 /**
  * Decode the network type
  *
- * \param net_type A valid member of the netloc_network_type_t type
+ * \param net_type A valid member of the \ref netloc_network_type_t type
  *
- * Returns
- *   NULL if the type is invalid
- *   A string for that netloc_network_type_t type
+ * \returns NULL if the type is invalid
+ * \returns A string for that \ref netloc_network_type_t type
  */
 static inline const char * netloc_decode_network_type(netloc_network_type_t net_type) {
     if( NETLOC_NETWORK_TYPE_ETHERNET == net_type ) {
@@ -105,10 +104,9 @@ static inline const char * netloc_decode_network_type(netloc_network_type_t net_
 /**
  * Decode the network type into a human readable string
  *
- * \param net_type A valid member of the netloc_network_type_t type
+ * \param net_type A valid member of the \ref netloc_network_type_t type
  *
- * Returns
- *   A string for that netloc_network_type_t type
+ * \returns A string for that \ref netloc_network_type_t type
  */
 static inline const char * netloc_decode_network_type_readable(netloc_network_type_t net_type) {
     if( NETLOC_NETWORK_TYPE_ETHERNET == net_type ) {
@@ -139,8 +137,7 @@ typedef enum {
  *
  * \param str_val String value to parse
  *
- * Returns
- *   A valid member of the netloc_node_type_t type
+ * \returns  A valid member of the \ref netloc_node_type_t type
  */
 static inline netloc_node_type_t netloc_encode_node_type(const char * str_val) {
     if( NULL == str_val ) {
@@ -160,11 +157,10 @@ static inline netloc_node_type_t netloc_encode_node_type(const char * str_val) {
 /**
  * Decode the node type
  *
- * \param node_type A valid member of the netloc_node_type_t type
+ * \param node_type A valid member of the \ref netloc_node_type_t type
  *
- * Returns
- *   NULL if the type is invalid
- *   A string for that netloc_node_type_t type
+ * \returns NULL if the type is invalid
+ * \returns A string for that \ref netloc_node_type_t type
  */
 static inline const char * netloc_decode_node_type(netloc_node_type_t node_type) {
     if( NETLOC_NODE_TYPE_SWITCH == node_type ) {
@@ -181,11 +177,10 @@ static inline const char * netloc_decode_node_type(netloc_node_type_t node_type)
 /**
  * Decode the node type into a human readable string
  *
- * \param node_type A valid member of the netloc_node_type_t type
+ * \param node_type A valid member of the \ref netloc_node_type_t type
  *
- * Returns
- *   NULL if the type is invalid
- *   A string for that netloc_node_type_t type
+ * \returns NULL if the type is invalid
+ * \returns A string for that \ref netloc_node_type_t type
  */
 static inline char * netloc_decode_node_type_readable(netloc_node_type_t node_type) {
     if( NETLOC_NODE_TYPE_SWITCH == node_type ) {
@@ -220,33 +215,45 @@ enum {
  **********************************************************************/
 
 /**
+ * \struct netloc_topology_t
  * \brief Netloc Topology Context
+ *
  * An opaque data structure used to reference a network topology.
  *
  * \note Must be initialized with \ref netloc_attach()
  */
 struct netloc_topology;
+/** \cond IGNORE */
 typedef struct netloc_topology * netloc_topology_t;
-
+/** \endcond */
 
 /**
- * \brief Lookup table type
+ * \struct netloc_dt_lookup_table_t
+ * \brief Lookup Table Type
+ *
  * An opaque data structure to represent a collection of data items
  */
 struct netloc_dt_lookup_table;
+/** \cond IGNORE */
 typedef struct netloc_dt_lookup_table * netloc_dt_lookup_table_t;
+/** \endcond */
 
 /**
- * \brief Lookup table iterator
+ * \struct netloc_dt_lookup_table_iterator_t
+ * \brief Lookup Table Iterator
+ *
  * An opaque data structure representing the next location in the lookup table
  */
 struct netloc_dt_lookup_table_iterator;
+/** \cond IGNORE */
 typedef struct netloc_dt_lookup_table_iterator * netloc_dt_lookup_table_iterator_t;
+/** \endcond */
 
 
 /**
  * \brief Netloc Network Type
- * Represents a single network.
+ *
+ * Represents a single network type and subnet.
  */
 struct netloc_network_t {
     /** Type of network */
@@ -371,19 +378,24 @@ struct netloc_node_t {
      */
     void * userdata;
 
-    /** Outgoing edges from this node */
+    /** Number of Outgoing edges from this node */
     int num_edges;
+    /** Outgoing edges from this node */
     netloc_edge_t **edges;
 
+    /** Number of edge IDs (Internal use only) */
     int num_edge_ids;
+    /** Edge IDs (Internal use only) */
     int *edge_ids;
 
-    /** Lookup table for physical paths from this node */
+    /** Number of physical paths computed from this node */
     int num_phy_paths;
+    /** Lookup table for physical paths from this node */
     netloc_dt_lookup_table_t physical_paths;
 
-    /** Lookup table for logical paths from this node */
+    /** Number of logical paths computed from this node */
     int num_log_paths;
+    /** Lookup table for logical paths from this node */
     netloc_dt_lookup_table_t logical_paths;
 };
 
@@ -392,76 +404,71 @@ struct netloc_node_t {
  * Datatype Support Functions
  **********************************************************************/
 /**
- * Constructor for netloc_network_t
+ * Constructor for \ref netloc_network_t
  *
  * User is responsible for calling the destructor on the handle.
  *
- * Returns
- *   A newly allocated pointer to the network information.
+ * \returns A newly allocated pointer to the network information.
  */
 NETLOC_DECLSPEC netloc_network_t * netloc_dt_network_t_construct(void);
 
 /**
- * Destructor for netloc_network_t
+ * Destructor for \ref netloc_network_t
  *
  * \param network A valid network handle
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR on error
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR on error
  */
 NETLOC_DECLSPEC int netloc_dt_network_t_destruct(netloc_network_t *network);
 
 /**
- * Copy Constructor for netloc_network_t
+ * Copy Constructor for \ref netloc_network_t
  *
- * Allocates memory. User is responsible for calling _destruct on the returned pointer.
+ * Allocates memory. User is responsible for calling 
+ * \ref netloc_dt_network_t_destruct on the returned pointer.
  * Does a shallow copy of the pointers to data.
  *
  * \param network A pointer to the network to duplicate
  *
- * Returns
- *   A newly allocated copy of the network.
+ * \returns A newly allocated copy of the network.
  */
 NETLOC_DECLSPEC netloc_network_t * netloc_dt_network_t_dup(netloc_network_t *network);
 
 /**
- * Copy Function for netloc_network_t
+ * Copy Function for \ref netloc_network_t
  *
  * Does not allocate memory for 'to'. Does a shallow copy of the pointers to data.
  *
  * \param from A pointer to the network to duplicate
  * \param to A pointer to the network to duplicate into
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR on error
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR on error
  */
 NETLOC_DECLSPEC int netloc_dt_network_t_copy(netloc_network_t *from, netloc_network_t *to);
 
 /**
- * Compare function for netloc_network_t
+ * Compare function for \ref netloc_network_t
  *
  * \param a A pointer to one network object for comparison
  * \param b A pointer to the other network object for comparison
  *
- * Returns
- *  NETLOC_CMP_SAME if the same
- *  NETLOC_CMP_SIMILAR if only the metadata (e.g., version) is different
- *  NETLOC_CMP_DIFF if different
+ * \returns \ref NETLOC_CMP_SAME if the same
+ * \returns \ref NETLOC_CMP_SIMILAR if only the metadata (e.g., version) is different
+ * \returns \ref NETLOC_CMP_DIFF if different
  */
 NETLOC_DECLSPEC int netloc_dt_network_t_compare(netloc_network_t *a, netloc_network_t *b);
 
 
 /**
- * Compare function for netloc_edge_t
+ * Compare function for \ref netloc_edge_t
  *
  * \param a A pointer to one edge object for comparison
  * \param b A pointer to the other edge object for comparison
  *
- * Returns
- *  NETLOC_CMP_SAME if the same
- *  NETLOC_CMP_DIFF if different
+ * \returns \ref NETLOC_CMP_SAME if the same
+ * \returns \ref NETLOC_CMP_DIFF if different
  */
 NETLOC_DECLSPEC int netloc_dt_edge_t_compare(netloc_edge_t *a, netloc_edge_t *b);
 
@@ -472,9 +479,8 @@ NETLOC_DECLSPEC int netloc_dt_edge_t_compare(netloc_edge_t *a, netloc_edge_t *b)
  * \param a A pointer to one network object for comparison
  * \param b A pointer to the other network object for comparison
  *
- * Returns
- *  NETLOC_CMP_SAME if the same
- *  NETLOC_CMP_DIFF if different
+ * \returns \ref NETLOC_CMP_SAME if the same
+ * \returns \ref NETLOC_CMP_DIFF if different
  */
 NETLOC_DECLSPEC int netloc_dt_node_t_compare(netloc_node_t *a, netloc_node_t *b);
 
@@ -490,8 +496,7 @@ NETLOC_DECLSPEC int netloc_dt_node_t_compare(netloc_node_t *a, netloc_node_t *b)
  *
  * \param table The table to reference in this iterator
  *
- * Returns
- *   A newly allocated pointer to the lookup table iterator.
+ * \returns A newly allocated pointer to the lookup table iterator.
  */
 NETLOC_DECLSPEC netloc_dt_lookup_table_iterator_t netloc_dt_lookup_table_iterator_t_construct(netloc_dt_lookup_table_t table);
 
@@ -500,9 +505,8 @@ NETLOC_DECLSPEC netloc_dt_lookup_table_iterator_t netloc_dt_lookup_table_iterato
  *
  * \param hti A valid lookup table iterator handle
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR on error
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR on error
  */
 NETLOC_DECLSPEC int netloc_dt_lookup_table_iterator_t_destruct(netloc_dt_lookup_table_iterator_t hti);
 
@@ -519,9 +523,8 @@ NETLOC_DECLSPEC int netloc_dt_lookup_table_iterator_t_destruct(netloc_dt_lookup_
  *
  * \param table The lookup table to destroy
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR on error
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR on error
  */
 NETLOC_DECLSPEC int netloc_lookup_table_destroy(netloc_dt_lookup_table_t table);
 
@@ -531,8 +534,7 @@ NETLOC_DECLSPEC int netloc_lookup_table_destroy(netloc_dt_lookup_table_t table);
  *
  * \param table A valid pointer to a lookup table
  *
- * Returns
- *   The used size of the lookup table
+ * \returns The used size of the lookup table
  */
 NETLOC_DECLSPEC int netloc_lookup_table_size(netloc_dt_lookup_table_t table);
 
@@ -543,9 +545,8 @@ NETLOC_DECLSPEC int netloc_lookup_table_size(netloc_dt_lookup_table_t table);
  * \param ht A valid pointer to a lookup table
  * \param key The key used to find the data
  *
- * Returns
- *   NULL if nothing found
- *   The pointer stored from a prior call to netloc_lookup_table_append
+ * \returns NULL if nothing found
+ * \returns The pointer associated with this key
  */
 NETLOC_DECLSPEC void * netloc_lookup_table_access(netloc_dt_lookup_table_t ht, const char *key);
 
@@ -557,24 +558,22 @@ NETLOC_DECLSPEC void * netloc_lookup_table_access(netloc_dt_lookup_table_t ht, c
  *
  * \param hti A valid pointer to a lookup table iterator
  *
- * Returns
- *   NULL if error or at end
- *   A newly allocated string copy of the key.
+ * \returns NULL if error or at end
+ * \returns A newly allocated string copy of the key.
  */
 NETLOC_DECLSPEC const char * netloc_lookup_table_iterator_next_key(netloc_dt_lookup_table_iterator_t hti);
 
 /**
  * Get the next entry and advance the iterator
  *
- * Similar to netloc_lookup_table_iterator_next_key() except the caller is
+ * Similar to \ref netloc_lookup_table_iterator_next_key except the caller is
  * given the next value directly. So they do not need to call the 
- * netloc_lookup_table_access() function to access the value.
+ * \ref netloc_lookup_table_access function to access the value.
  *
  * \param hti A valid pointer to a lookup table iterator
  *
- * Returns
- *   NULL if error or at end
- *   The pointer stored from a prior call to netloc_lookup_table_append
+ * \returns NULL if error or at end
+ * \returns The pointer associated with this key
  */
 NETLOC_DECLSPEC void * netloc_lookup_table_iterator_next_entry(netloc_dt_lookup_table_iterator_t hti);
 
@@ -583,8 +582,7 @@ NETLOC_DECLSPEC void * netloc_lookup_table_iterator_next_entry(netloc_dt_lookup_
  *
  * \param hti A valid pointer to a lookup table iterator
  *
- * Returns
- *   true if at the end of the data, false otherwise
+ * \returns true if at the end of the data, false otherwise
  */
 NETLOC_DECLSPEC bool netloc_lookup_table_iterator_at_end(netloc_dt_lookup_table_iterator_t hti);
 
@@ -608,8 +606,7 @@ NETLOC_DECLSPEC void netloc_lookup_table_iterator_reset(netloc_dt_lookup_table_i
  *
  * \param network A valid pointer to a network
  *
- * Returns
- *   A newly allocated string representation of the network.
+ * \returns A newly allocated string representation of the network.
  */
 NETLOC_DECLSPEC char * netloc_pretty_print_network_t(netloc_network_t* network);
 
@@ -620,8 +617,7 @@ NETLOC_DECLSPEC char * netloc_pretty_print_network_t(netloc_network_t* network);
  *
  * \param edge A valid pointer to an edge
  *
- * Returns
- *   A newly allocated string representation of the edge.
+ * \returns A newly allocated string representation of the edge.
  */
 NETLOC_DECLSPEC char * netloc_pretty_print_edge_t(netloc_edge_t* edge);
 
@@ -632,8 +628,7 @@ NETLOC_DECLSPEC char * netloc_pretty_print_edge_t(netloc_edge_t* edge);
  *
  * \param node A valid pointer to a node
  *
- * Returns
- *   A newly allocated string representation of the node.
+ * \returns A newly allocated string representation of the node.
  */
 NETLOC_DECLSPEC char * netloc_pretty_print_node_t(netloc_node_t* node);
 
@@ -650,14 +645,13 @@ NETLOC_DECLSPEC char * netloc_pretty_print_node_t(netloc_node_t* node);
  *                 out with the rest of the information found. If the method
  *                 returns some error then the network handle is not modified.
  *
- * Returns
- *   NETLOC_SUCCESS if exactly one network matches the specification,
+ * \returns NETLOC_SUCCESS if exactly one network matches the specification,
  *                  and updates the network handle.
- *   NETLOC_ERROR_MULTIPLE if more than one network matches the spec.
- *   NETLOC_ERROR_EMPTY if no networks match the specification.
- *   NETLOC_ERROR_NOENT if the directory does not exist.
- *   NETLOC_ERROR_NOTDIR if the data_dir is not a directory.
- *   NETLOC_ERROR if something else is wrong.
+ * \returns NETLOC_ERROR_MULTIPLE if more than one network matches the spec.
+ * \returns NETLOC_ERROR_EMPTY if no networks match the specification.
+ * \returns NETLOC_ERROR_NOENT if the directory does not exist.
+ * \returns NETLOC_ERROR_NOTDIR if the data_dir is not a directory.
+ * \returns NETLOC_ERROR if something else is wrong.
  */
 NETLOC_DECLSPEC int netloc_find_network(const char * network_topo_uri,
                                         netloc_network_t* network);
@@ -686,9 +680,8 @@ NETLOC_DECLSPEC int netloc_find_network(const char * network_topo_uri,
  * \param num_networks Size of the networks array.
  * \param networks An array of networks discovered.
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR otherwise
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_foreach_network(const char * const * search_uris,
                                              int num_uris,
@@ -704,43 +697,42 @@ NETLOC_DECLSPEC int netloc_foreach_network(const char * const * search_uris,
 /**
  * Attach to the specified network, and allocate a topology handle.
  *
- * User is responsible for calling netloc_detach on the topology handle.
+ * User is responsible for calling \ref netloc_detach on the topology handle.
  * The network parameter information is deep copied into the topology handle, so the
  * user may destruct the network handle after calling this function and/or reuse
  * the network handle.
  *
  * \param topology A pointer to a netloc_topology_t handle.
- * \param network The netloc_network_t handle from a prior call to either:
- *                - netloc_find_network()
- *                - netloc_foreach_network()
+ * \param network The \ref netloc_network_t handle from a prior call to either:
+ *                - \ref netloc_find_network()
+ *                - \ref netloc_foreach_network()
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_attach(netloc_topology_t * topology, netloc_network_t network);
 
 /**
  * Detach from a topology handle
  *
- * \param topology A valid pointer to a netloc_topology_t handle created from a prior call to netloc_attach().
+ * \param topology A valid pointer to a \ref netloc_topology_t handle created
+ * from a prior call to \ref netloc_attach.
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_detach(netloc_topology_t topology);
 
 /**
  * Refresh the data associated with the topology.
  *
- * Note: This interface is not currently implemented.
+ * \warning This interface is not currently implemented.
  *
- * \param topology A valid pointer to a netloc_topology_t handle created from a prior call to netloc_attach().
+ * \param topology A valid pointer to a \ref netloc_topology_t handle created
+ * from a prior call to \ref netloc_attach.
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_refresh(netloc_topology_t topology);
 
@@ -749,66 +741,68 @@ NETLOC_DECLSPEC int netloc_refresh(netloc_topology_t topology);
  * Query API Functions
  **********************************************************************/
 /**
- * Access a reference to the netloc_network_t associated with the netloc_topology_t
+ * Access a reference to the \ref netloc_network_t associated with the \ref netloc_topology_t
  *
- * The user should -not- call the netloc_network_t's destructor on the reference returned.
+ * The user should -not- call \ref netloc_dt_network_t_destruct on the reference returned.
  *
  * \param topology A valid pointer to a topology handle
  *
- * Returns
- *   A reference to the netloc_network_t associtated with the topology
- *   NULL on error.
+ * \returns A reference to the \ref netloc_network_t associtated with the topology
+ * \returns NULL on error.
  */
 NETLOC_DECLSPEC netloc_network_t* netloc_access_network_ref(netloc_topology_t topology);
 
 /**
  * Get all nodes in the network topology
  * 
- * The user is responsible for calling the lookup table destructor on the nodes table.
- * The user should -not- call the netloc_node_t's destructor on the elements in the lookup table.
+ * The user is responsible for calling the lookup table destructor on the nodes
+ * table (\ref netloc_lookup_table_destroy).
+ * The user should -not- call the netloc_node_t's destructor on the elements in
+ * the lookup table. That interface (netloc_dt_node_t_destruct) is not publicly exposed.
  *
  * \param topology A valid pointer to a topology handle
  * \param nodes A lookup table of the nodes requested
- *              Keys in the table are the physical_id's of the netloc_node_t's
- *              The values are pointers to netloc_node_t's
+ *              Keys in the table are the \ref netloc_node_t::physical_id's of the \ref netloc_node_t objects
+ *              The values are pointers to \ref netloc_node_t objects
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_get_all_nodes(netloc_topology_t topology, netloc_dt_lookup_table_t *nodes);
 
 /**
  * Get only switch nodes in the network topology
  * 
- * The user is responsible for calling the lookup table destructor on the nodes table.
- * The user should -not- call the netloc_node_t's destructor on the elements in the lookup table.
+ * The user is responsible for calling the lookup table destructor on the nodes
+ * table (\ref netloc_lookup_table_destroy).
+ * The user should -not- call the netloc_node_t's destructor on the elements in
+ * the lookup table. That interface (netloc_dt_node_t_destruct) is not publicly exposed.
  *
  * \param topology A valid pointer to a topology handle
  * \param nodes A lookup table of the nodes requested
- *              Keys in the table are the physical_id's of the netloc_node_t's
- *              The values are pointers to netloc_node_t's
+ *              Keys in the table are the \ref netloc_node_t::physical_id's of the \ref netloc_node_t objects
+ *              The values are pointers to \ref netloc_node_t objects
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_get_all_switch_nodes(netloc_topology_t topology, netloc_dt_lookup_table_t *nodes);
 
 /**
  * Get only host nodes in the network topology
  * 
- * The user is responsible for calling the lookup table destructor on the nodes table.
- * The user should -not- call the netloc_node_t's destructor on the elements in the lookup table.
+ * The user is responsible for calling the lookup table destructor on the nodes
+ * table (\ref netloc_lookup_table_destroy).
+ * The user should -not- call the netloc_node_t's destructor on the elements in
+ * the lookup table. That interface (netloc_dt_node_t_destruct) is not publicly exposed.
  * 
  * \param topology A valid pointer to a topology handle
  * \param nodes A lookup table of the nodes requested
- *              Keys in the table are the physical_id's of the netloc_node_t's
- *              The values are pointers to netloc_node_t's
+ *              Keys in the table are the \ref netloc_node_t::physical_id's of the \ref netloc_node_t objects
+ *              The values are pointers to \ref netloc_node_t objects
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_get_all_host_nodes(netloc_topology_t topology, netloc_dt_lookup_table_t *nodes);
 
@@ -819,13 +813,12 @@ NETLOC_DECLSPEC int netloc_get_all_host_nodes(netloc_topology_t topology, netloc
  * The user should not free the array, neither its elements.
  *
  * \param topology A valid pointer to a topology handle
- * \param node A valid pointer to a netloc_node_t from which to get the edges.
+ * \param node A valid pointer to a \ref netloc_node_t from which to get the edges.
  * \param num_edges The number of edges in the edges array.
- * \param edges An array of netloc_edge_t's
+ * \param edges An array of \ref netloc_edge_t objects
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_get_all_edges(netloc_topology_t topology,
                                          netloc_node_t *node,
@@ -833,36 +826,34 @@ NETLOC_DECLSPEC int netloc_get_all_edges(netloc_topology_t topology,
                                          netloc_edge_t ***edges);
 
 /**
- * Access the netloc_node_t pointer given a physical_id
+ * Access the \ref netloc_node_t pointer given a physical identifier (e.g., MAC address, GUID)
  *
  * The user should -not- call the destructor on the returned value.
  *
  * \param topology A valid pointer to a topology handle
- * \param phy_id The physical_id to search for
+ * \param phy_id The physical identifier to search for (e.g., MAC address, GUID)
  *
- * Returns
- *   A pointer to the netloc_node_t with the specified physical_id
- *   or NULL if the physical_id is not found.
+ * \returns A pointer to the \ref netloc_node_t with the specified physical identifier
+ * \returns NULL if the phy_id is not found.
  */
 NETLOC_DECLSPEC netloc_node_t * netloc_get_node_by_physical_id(netloc_topology_t topology, const char * phy_id);
 
 /**
- * Get the "path" from the source to the destination as an ordered array of netloc_edge_t's
+ * Get the "path" from the source to the destination as an ordered array of \ref netloc_edge_t objects
  *
  * The user is responsible for calling free() on the allocated array, but -not- the elements in the array.
  *
- * Note: A large API change is in the works for v1.0 that will change how we represent path data.
+ * \warning A large API change is in the works for v1.0 that will change how we represent path data.
  *
  * \param topology A valid pointer to a topology handle
  * \param src_node A valid pointer to the source node
  * \param dst_node A valid pointer to the destination node
  * \param num_edges The number of edges in the path array.
- * \param path An ordered array of netloc_edge_t's from the source to the destination
+ * \param path An ordered array of \ref netloc_edge_t objects from the source to the destination
  * \param is_logical If the path should represent the logical or the physical path information.
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_get_path(const netloc_topology_t topology,
                                     netloc_node_t *src_node,
@@ -881,9 +872,8 @@ NETLOC_DECLSPEC int netloc_get_path(const netloc_topology_t topology,
  * \param topology A valid pointer to a topology handle
  * \param filename The filename to write the data to
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_topology_export_graphml(netloc_topology_t topology, const char * filename);
 
@@ -893,9 +883,8 @@ NETLOC_DECLSPEC int netloc_topology_export_graphml(netloc_topology_t topology, c
  * \param topology A valid pointer to a topology handle
  * \param filename The filename to write the data to
  *
- * Returns
- *   NETLOC_SUCCESS on success
- *   NETLOC_ERROR upon an error.
+ * \returns NETLOC_SUCCESS on success
+ * \returns NETLOC_ERROR upon an error.
  */
 NETLOC_DECLSPEC int netloc_topology_export_gexf(netloc_topology_t topology, const char * filename);
 

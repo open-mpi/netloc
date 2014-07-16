@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013      University of Wisconsin-La Crosse.
+ * Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
  *                         All rights reserved.
  * Copyright (c) 2013 Cisco Systems, Inc.  All rights reserved.
  *
@@ -10,15 +10,6 @@
  *
  * $HEADER$
  *
- *
- * Data Collection API
- * -------------------
- * This interface extends the "north bound" (user facing) interface with
- * functionlaity to support backed (or "south bound") readers.
- *
- * Readers should use this API to store netloc structures. The intention
- * of this interface is to abstract away the data storage mechanism from
- * the readers.
  */
 
 #ifndef _NETLOC_DC_H_
@@ -38,6 +29,12 @@
 #include <netloc.h>
 
 /** \defgroup netloc_dc_api Data Collection API
+ * This interface extends the "north bound" (user facing) interface with
+ * functionlaity to support backed (or "south bound") readers.
+ *
+ * Readers should use this API to store netloc structures. The intention
+ * of this interface is to abstract away the data storage mechanism from
+ * the readers.
  * @{
  */
 
@@ -49,14 +46,17 @@
  *        Structures
  **********************************************************************/
 /**
- * Data Connection Handle
+ * \brief Data Collection Handle
+ *
+ * THe data collection handle off of which the topology data is stored.
  */
 struct netloc_data_collection_handle_t {
     /** Point to the network */
     netloc_network_t *network;
 
-    /** Status of the handle */
+    /** Status of the handle : If it is open */
     bool is_open;
+    /** Status of the handle : If it is read only */
     bool is_read_only;
 
     /** Unique ID String */
@@ -82,32 +82,39 @@ struct netloc_data_collection_handle_t {
 
     /** JSON Object for nodes */
     json_t *node_data;
+    /** (Internal Use only) Accumulation object */
     json_t *node_data_acc;
 
     /** JSON Object for paths */
     json_t *path_data;
+    /** (Internal Use only) Accumulation object */
     json_t *path_data_acc;
 
     /** JSON Object for paths */
     json_t *phy_path_data;
+    /** (Internal Use only) Accumulation object */
     json_t *phy_path_data_acc;
 };
 typedef struct netloc_data_collection_handle_t netloc_data_collection_handle_t;
+
 
 /**********************************************************************
  *        Datatype Support Functions
  **********************************************************************/
 /**
- * Constructor for netloc_data_collection_handle_t
+ * Constructor for \ref netloc_data_collection_handle_t
  *
  * User is responsible for calling the destructor on the handle.
+ *
+ * \returns A newly constructed collection handle
  */
 NETLOC_DECLSPEC netloc_data_collection_handle_t * netloc_dt_data_collection_handle_t_construct();
 
 /**
- * Destructor for netloc_data_collection_handle_t
+ * Destructor for \ref netloc_data_collection_handle_t
  *
- * \param handle A pointer to a netloc_data_collection_handle_t previously constructed.
+ * \param handle A pointer to a \ref netloc_data_collection_handle_t previously constructed
+ * by \ref netloc_dt_data_collection_handle_t_construct.
  */
 NETLOC_DECLSPEC int netloc_dt_data_collection_handle_t_destruct(netloc_data_collection_handle_t *handle);
 
@@ -118,33 +125,31 @@ NETLOC_DECLSPEC int netloc_dt_data_collection_handle_t_destruct(netloc_data_coll
 /**
  * Create a new data collection for this network.
  *
- * The user is responsible for calling the netloc_dt_data_collection_handle_t_destruct() function
+ * The user is responsible for calling the \ref netloc_dt_data_collection_handle_t_destruct function
  * on the pointer returned once finished with the handle.
  *
- * This function duplicates the network_t pointer passed to it, so the user is free to call the
- * the netloc_dt_network_t_destruct() function on the pointer when finished with it.
+ * This function duplicates the \ref netloc_network_t pointer passed to it, so the user is free to call the
+ * the \ref netloc_dt_network_t_destruct function on the pointer when finished with it.
  *
- * netowrk
- * \param network Network information (must be complete, from a prior call to netloc_find_network)
- * \param dir Directory to store the .ndat files (Allowd to be NULL if current working directory)
+ * \param network Network information (must be complete, from a prior call to \ref netloc_find_network)
+ * \param dir Directory to store the .ndat files (Allowed to be NULL if current working directory)
  *
- * Returns
- *   NULL on error, and a valid data collection handle on success
+ * \returns NULL on error
+ * \returns A valid data collection handle on success
  */
 NETLOC_DECLSPEC netloc_data_collection_handle_t * netloc_dc_create(netloc_network_t *network, char * dir);
 
 /**
  * Close a data collection handle
- * This may write out data if the handle was created in netloc_dc_create.
+ * This may write out data if the handle was created in \ref netloc_dc_create.
  *
- * The user is responsible for calling netloc_dt_data_collection_handle_t_destruct() on
+ * The user is responsible for calling \ref netloc_dt_data_collection_handle_t_destruct on
  * the handle when finished with it. The close function does not destruct the handle.
  *
  * \param handle A valid pointer to a data collection handle
  *
- * Returns
- *   NETLOC_SUCCESS upon success
- *   NETLOC_ERROR otherwise
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_close(netloc_data_collection_handle_t *handle);
 
@@ -153,9 +158,8 @@ NETLOC_DECLSPEC int netloc_dc_close(netloc_data_collection_handle_t *handle);
  *
  * \param handle A valid pointer to a data collection handle
  *
- * Returns
- *   NULL if no network information found
- *   Pointer to a netloc_network_t (caller is responsibe for deallocating this object)
+ * \returns NULL if no network information found
+ * \returns Pointer to a \ref netloc_network_t (caller is responsibe for deallocating this object)
  */
 NETLOC_DECLSPEC netloc_network_t * netloc_dc_handle_get_network(netloc_data_collection_handle_t *handle);
 
@@ -164,9 +168,8 @@ NETLOC_DECLSPEC netloc_network_t * netloc_dc_handle_get_network(netloc_data_coll
  *
  * \param handle A valid pointer to a data collection handle
  *
- * Returns
- *   NULL if handle is invalid, or has not unique_id_str
- *   Unique ID string for this handle (caller is responsible for deallocating the string)
+ * \returns NULL if handle is invalid, or has no unique_id_str
+ * \returns Unique ID string for this handle (caller is responsible for deallocating the string)
  */
 NETLOC_DECLSPEC char * netloc_dc_handle_get_unique_id_str(netloc_data_collection_handle_t *handle);
 
@@ -175,57 +178,53 @@ NETLOC_DECLSPEC char * netloc_dc_handle_get_unique_id_str(netloc_data_collection
  *
  * \param filename Filename with network information
  *
- * Returns
- *   NULL if handle is invalid, or has not unique_id_str
- *   Unique ID string for this handle (caller is responsible for deallocating the string)
+ * \returns NULL if handle is invalid, or has no unique_id_str
+ * \returns Unique ID string for this handle (caller is responsible for deallocating the string)
  */
 NETLOC_DECLSPEC char * netloc_dc_handle_get_unique_id_str_filename(char *filename);
 
 /**
- * Append netloc_node_t information to the data collection
+ * Append \ref netloc_node_t information to the data collection
  *
  * \param handle A valid pointer to a data collection handle
- * \param node   A pointer to the netloc_node_t to append
+ * \param node   A pointer to the \ref netloc_node_t to append
  *
- * Returns
- *   NETLOC_SUCCESS upon success
- *   NETLOC_ERROR otherwise
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_append_node(netloc_data_collection_handle_t *handle, netloc_node_t *node);
 
 /**
- * Append netloc_edge_t information to the netloc_node_t structure
+ * Append \ref netloc_edge_t information to the \ref netloc_node_t structure
  *
  * This function makes a copy of the edge information before storing it on the node. So 
  * the user may reuse the edge, and is responsible for calling the edge destructor when
- * finished with it.
+ * finished with it (\ref netloc_dt_edge_t_destruct).
  *
  * \param handle A valid pointer to a data collection handle
- * \param node   A valid pointer to a netloc_node_t to append the edge to
+ * \param node   A valid pointer to a \ref netloc_node_t to append the edge to
  * \param edge   A valid pointer to the edge information to attach
  *
- * Returns
- *   NETLOC_SUCCESS upon success
- *   NETLOC_ERROR otherwise
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netloc_node_t *node, netloc_edge_t *edge);
 
 /**
- * Access a stored node by the physcial ID
+ * Access a stored node by the physcial identifier (e.g., MAC address, GUID)
  *
  * The user should -not- call the destructor on the returned value.
  *
  * \param handle A valid pointer to a data collection handle
  * \param phy_id The physical_id to search for
  *
- * Returns
- *   A pointer to the netloc_node_t with the specified physical_id
- *   or NULL if the physical_id is not found.
+ * \returns A pointer to the \ref netloc_node_t with the specified physical_id
+ * \returns NULL if the phy_id is not found.
  */
 NETLOC_DECLSPEC netloc_node_t * netloc_dc_get_node_by_physical_id(netloc_data_collection_handle_t *handle, char * phy_id);
 
 /**
- * Append a path between two netloc_node_t objects
+ * Append a path between two \ref netloc_node_t objects
  * Each edge in this list will be appened to the data collection, if it is not already there.
  *
  * \param handle A valid pointer to a data collection handle
@@ -235,9 +234,8 @@ NETLOC_DECLSPEC netloc_node_t * netloc_dc_get_node_by_physical_id(netloc_data_co
  * \param edges Ordered array of edges from the source to the destination
  * \param is_logical If the path is a logical or physical path
  *
- * Returns
- *   NETLOC_SUCCESS upon success
- *   NETLOC_ERROR otherwise
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_append_path(netloc_data_collection_handle_t *handle,
                                           const char * src_node_id,
@@ -246,7 +244,7 @@ NETLOC_DECLSPEC int netloc_dc_append_path(netloc_data_collection_handle_t *handl
                                           bool is_logical);
 
 /**
- * JJH TODO
+ * \todo JJH document this interface
  */
 NETLOC_DECLSPEC int netloc_dc_compute_path_between_nodes(netloc_data_collection_handle_t *handle,
                                                          netloc_node_t *src_node,

@@ -8,6 +8,8 @@
  * See COPYING in top-level directory.
  *
  * $HEADER$
+ *
+ * This program prints all of the nodes in all of the network topologies discovered.
  */
 #include "netloc.h"
 

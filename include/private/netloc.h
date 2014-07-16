@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2013      University of Wisconsin-La Crosse.
+ * Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
  *                         All rights reserved.
  *
  * $COPYRIGHT$
