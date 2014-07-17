@@ -1,11 +1,18 @@
-//
-// Copyright © 2013 Cisco Systems, Inc.  All rights reserved.
-// Copyright © 2013 Inria.  All rights reserved.
-//
-// See COPYING in top-level directory.
-//
-// $HEADER$
-//
+/*
+ *
+ * Copyright © 2013 Cisco Systems, Inc.  All rights reserved.
+ * Copyright © 2013 Inria.  All rights reserved.
+ * Copyright (c) 2014      University of Wisconsin-La Crosse.
+ *                         All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ * See COPYING in top-level directory.
+ *
+ * $HEADER$
+ *
+ * Example: ./lsmap data/
+ */
 
 #include "netloc.h"
 #include "netloc_map.h"

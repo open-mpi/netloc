@@ -49,7 +49,7 @@ int main(void) {
     int i;
 
     search_uris = (char**)malloc(sizeof(char*) * num_uris );
-    search_uris[0] = strdup("file://data/");
+    search_uris[0] = strdup("file://data/netloc");
 
     /*
      * Find all networks

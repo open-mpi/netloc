@@ -33,29 +33,66 @@ typedef void * netloc_map_server_t;
 /** A netloc map port handle. */
 typedef void * netloc_map_port_t;
 
-/** Creating a map. */
+/**
+ * Create a map
+ *
+ * \param map The map object to create
+ *
+ * \returns 0 on success
+ * \returns -1 on error
+ */
 NETLOC_DECLSPEC int netloc_map_create(netloc_map_t *map);
 
-/** Loading hwloc data from a directory into a map. */
+/**
+ * Loading the hwloc data from a directory into a map.
+ *
+ * \param map The map object to attach the data to
+ * \param data_dir the data directory to read the hwloc information from
+ *
+ * \returns 0 on success
+ */
 NETLOC_DECLSPEC int netloc_map_load_hwloc_data(netloc_map_t map, const char *data_dir);
 
-/** Loading netloc data from a directory into a map. */
+/** 
+ * Loading the netloc data from a directory into a map.
+ *
+ * \param map The map object to attach the data to
+ * \param data_dir the data directory to read the netloc information from
+ *
+ * \returns 0 on success
+ */
 NETLOC_DECLSPEC int netloc_map_load_netloc_data(netloc_map_t map, const char *data_dir);
 
-/** Flags to be passed as a OR'ed set to netloc_map_build(). */
+/**
+ * Flags to be passed as a OR'ed set to the \ref netloc_map_build function
+ */
 enum netloc_map_build_flags_e {
   NETLOC_MAP_BUILD_FLAG_COMPRESS_HWLOC = (1<<0) /**< Enable hwloc topology compression if supported. \hideinitializer */
 };
 
-/** Build a map that was previously created and where hwloc and netloc data were loaded. */
+/**
+ * Build a map that was previously created and where hwloc and netloc data were loaded.
+ *
+ * Requires the the \ref netloc_map_load_hwloc_data and \ref netloc_map_load_netloc_data
+ * functions have been called on the map object.
+ *
+ * \param map A valid map object
+ * \param flags Any \ref netloc_map_build_flags_e flags
+ *
+ * \returns 0 on success
+ * \return -1 on error
+ */
 NETLOC_DECLSPEC int netloc_map_build(netloc_map_t map, unsigned long flags);
 
-/** Destroy a map.
- * \note Needed even if build() failed.
+/**
+ * Destroy a map.
+ *
+ * \note Needed even if \ref netloc_map_build failed.
  */
 NETLOC_DECLSPEC int netloc_map_destroy(netloc_map_t map);
 
-/** Returns the number of ports that are close to the hwloc topology and object.
+/**
+ * Returns the number of ports that are close to the hwloc topology and object.
  *
  * On input, *nr specifies how many ports can be stored in *ports.
  * On output, *nr specifies how many were actually stored.
@@ -92,16 +129,20 @@ NETLOC_DECLSPEC int netloc_map_port2netloc(netloc_map_port_t port,
 NETLOC_DECLSPEC int netloc_map_port2hwloc(netloc_map_port_t port,
 					  hwloc_topology_t *htopop, hwloc_obj_t *hobjp);
 
-/** Convert between a hwloc topology and a server.
+/**
+ * Convert from a server object to a hwloc topology
  *
  * A reference is taken on the topology, it should be released later with netloc_map_put_hwloc()
  */
 NETLOC_DECLSPEC int netloc_map_server2hwloc(netloc_map_server_t server, hwloc_topology_t *topology);
 
-/** Convert from topology to server.
+/**
+ * Convert from a hwloc topology to server object.
  *
- * \note equivalent to hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName") as long as hwloc stored the server name in the topology.
- * \note server should not be freed by the caller
+ * \note Equivalent to hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName") 
+ * as long as hwloc stored the server name in the topology.
+ * \note Server should not be freed by the caller
+ *
  */
 NETLOC_DECLSPEC int netloc_map_hwloc2server(netloc_map_t map, hwloc_topology_t topology, netloc_map_server_t *server);
 
@@ -143,13 +184,32 @@ NETLOC_DECLSPEC int netloc_map_get_server_ports(netloc_map_server_t server,
 NETLOC_DECLSPEC int netloc_map_port2server(netloc_map_port_t port,
 					   netloc_map_server_t *server);
 
-/** Return the map of a server */
+/**
+ * Return the map of a server
+ *
+ * \param server A valid server object
+ * \param map ?
+ */
 NETLOC_DECLSPEC int netloc_map_server2port(netloc_map_server_t server, netloc_map_t *map);
 
-/** Return the name of a server */
+/**
+ * Return the name of a server
+ *
+ * \param server A valid server object
+ * \param name The name associated with that server
+ */
 NETLOC_DECLSPEC int netloc_map_server2name(netloc_map_server_t server, const char **name);
 
-/** Return the server from a name */
+/**
+ * Access the server object from a name
+ *
+ * \param map A valid map object
+ * \param name The name of the server
+ * \param server The associated server object
+ *
+ * \returns -1 on success
+ * \returns -1 on error
+ */
 NETLOC_DECLSPEC int netloc_map_name2server(netloc_map_t map,
 					   const char *name, netloc_map_server_t *server);
 
@@ -221,13 +281,29 @@ NETLOC_DECLSPEC int netloc_map_paths_get(netloc_map_paths_t paths, unsigned idx,
 /** Destroy a previously built netloc map paths handle. */
 NETLOC_DECLSPEC int netloc_map_paths_destroy(netloc_map_paths_t paths);
 
-/* FIXME: get neighbor nodes at a given distance, within any or a single subnet */
-/* FIXME: get neighbor nodes with enough cores, within any or a single subnet */
-
-/* temporary, for debugging */
+/**
+ * Find the neighbors of the specified node out to a given depth in the network.
+ *
+ * \todo Brice FIXME: get neighbor nodes at a given distance, within any or a single subnet
+ * \todo Brice FIXME: get neighbor nodes with enough cores, within any or a single subnet
+ * \todo Brice This interface is temporary, for debugging
+ *
+ * \param map A valid map object
+ * \param hostname The hostname of the node to start from
+ * \param depth The depth into the network to search
+ *
+ * \returns 
+ */
 NETLOC_DECLSPEC int netloc_map_find_neighbors(netloc_map_t map,
 					       const char *hostname, unsigned depth);
 
+/**
+ * Display the map to stdout (Debugging purposes only)
+ *
+ * \param map A valid map object
+ *
+ * \returns 0 on success
+ */
 NETLOC_DECLSPEC int netloc_map_dump(netloc_map_t map);
 
 #ifdef __cplusplus

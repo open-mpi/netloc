@@ -42,7 +42,7 @@ int main(void) {
     network = netloc_dt_network_t_construct();
     network->network_type = NETLOC_NETWORK_TYPE_INFINIBAND;
     network->subnet_id    = strdup("fe80:0000:0000:0000");
-    search_uri = strdup("file://data/");
+    search_uri = strdup("file://data/netloc");
 
     ret = netloc_find_network(search_uri, network);
     if( NETLOC_SUCCESS != ret ) {

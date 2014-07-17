@@ -34,7 +34,7 @@ int main(void) {
     if( NULL == search_uris ) {
         return NETLOC_ERROR;
     }
-    search_uris[0] = strdup("file://data/");
+    search_uris[0] = strdup("file://data/netloc");
 
     /*
      * Find all of the networks in the specified serach URI locations

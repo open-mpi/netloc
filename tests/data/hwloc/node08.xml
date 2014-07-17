@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topology SYSTEM "hwloc.dtd">
+<topology>
+  <object type="Machine" os_index="0" cpuset="0x0000000f" complete_cpuset="0x0000000f" online_cpuset="0x0000000f" allowed_cpuset="0x0000000f" nodeset="0x00000003" complete_nodeset="0x00000003" allowed_nodeset="0x00000003">
+    <info name="HostName" value="node08"/>
+    <info name="Backend" value="Synthetic"/>
+    <object type="NUMANode" os_index="0" cpuset="0x00000003" complete_cpuset="0x00000003" online_cpuset="0x00000003" allowed_cpuset="0x00000003" nodeset="0x00000001" complete_nodeset="0x00000001" allowed_nodeset="0x00000001" local_memory="1073741824">
+      <page_type size="4096" count="262144"/>
+      <object type="PU" os_index="0" cpuset="0x00000001" complete_cpuset="0x00000001" online_cpuset="0x00000001" allowed_cpuset="0x00000001" nodeset="0x00000001" complete_nodeset="0x00000001" allowed_nodeset="0x00000001"/>
+      <object type="PU" os_index="1" cpuset="0x00000002" complete_cpuset="0x00000002" online_cpuset="0x00000002" allowed_cpuset="0x00000002" nodeset="0x00000001" complete_nodeset="0x00000001" allowed_nodeset="0x00000001"/>
+    </object>
+    <object type="Bridge" os_index="0" bridge_type="0-1" depth="0" bridge_pci="0000:[00-1b]">
+      <object type="PCIDev" os_index="45056" name="Synthetic Ethernet NIC" pci_busid="0000:0b:00.0" pci_type="0200 [1137:0043] [1137:0047] a2" pci_link_speed="0.000000">
+        <info name="PCIVendor" value="Synthetic Inc"/>
+        <info name="PCIDevice" value="Ethernet NIC"/>
+        <object type="OSDev" name="eth0" osdev_type="2">
+          <info name="Address" value="00:00:00:00:00:08"/>
+        </object>
+      </object>
+    </object>
+  </object>
+</topology>

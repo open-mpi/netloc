@@ -45,7 +45,7 @@ int main(void) {
     tmp_network = netloc_dt_network_t_construct();
     tmp_network->network_type = NETLOC_NETWORK_TYPE_INFINIBAND;
     tmp_network->subnet_id    = strdup("fe80:0000:0000:0000");
-    search_uri = strdup("file://data/");
+    search_uri = strdup("file://data/netloc");
 
     ret = netloc_find_network(search_uri, tmp_network);
     if( NETLOC_SUCCESS != ret ) {

@@ -20,7 +20,7 @@ int main(void) {
 
     // Specify where to search for network data
     search_uris = (char**)malloc(sizeof(char*) * num_uris );
-    search_uris[0] = strdup("file://data/");
+    search_uris[0] = strdup("file://data/netloc");
 
     // Find a specific InfiniBand network
     tmp_network = netloc_dt_network_t_construct();
