@@ -1,4 +1,4 @@
-Copyright (c) 2013      University of Wisconsin-La Crosse.
+Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
                         All rights reserved.
 Copyright (c) 2013      Cisco Systems, Inc.  All rights reserved.
 
@@ -14,6 +14,19 @@ $HEADER$
 This file contains the main features as well as overviews of specific
 bug fixes (and other actions) for each version of neloc since version
 0.5.
+
+Master (not yet released in a named branch)
+-------------------------------------------
+- Added Doxygen documentation. Generated as HTML and PDF formats.
+- Added a few full examples associated with the documentation in tests/netloc_*
+- Add raw documentation for gathering InfiniBand data.
+  doc/README.infiniband
+- Add raw documentation for gathering OpenFlow data including how to simulate
+  an OpenFlow environment for testing.
+  doc/README.openflow
+- Require hwloc >= v1.4.2
+- Add a --help option to netloc_ib_extract_dats
+- 
 
 Version 0.5
 -----------

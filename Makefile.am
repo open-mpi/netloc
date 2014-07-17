@@ -1,4 +1,6 @@
 # Copyright © 2014 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2014      University of Wisconsin-La Crosse.
+#                         All rights reserved.
 #
 # See COPYING in top-level directory.
 #
