@@ -57,33 +57,20 @@ test-suite.log
 /tools/reader_of/netloc_reader_of_opendaylight
 
 /tests/hwloc_compress
-/tests/hwloc_compress.o
 /tests/lsmap
-/tests/lsmap.o
 /tests/map_paths
-/tests/map_paths.o
 /tests/test_API
-/tests/test_API.o
 /tests/test_ETH_API
-/tests/test_ETH_API.o
 /tests/test_ETH_verbose
-/tests/test_ETH_verbose.o
 /tests/test_find_neighbors
-/tests/test_find_neighbors.o
 /tests/test_map
-/tests/test_map.o
 /tests/test_map_hwloc
-/tests/test_map_hwloc.o
 /tests/test_metadata
-/tests/test_metadata.o
 /tests/test_conv
-/tests/test_conv.o
 /tests/netloc_hello
-/tests/netloc_hello.o
 /tests/netloc_all
-/tests/netloc_all.o
 /tests/netloc_nodes
-/tests/netloc_nodes.o
+/tests/*.o
 
 /doc/doxygen-config.cfg
 /doc/doxygen-doc/
