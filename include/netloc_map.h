@@ -1,6 +1,6 @@
 /*
  * Copyright © 2013 Cisco Systems, Inc.  All rights reserved.
- * Copyright © 2013 Inria.  All rights reserved.
+ * Copyright © 2013-2014 Inria.  All rights reserved.
  *
  * See COPYING in top-level directory.
  *
@@ -23,26 +23,40 @@ extern "C" {
 #endif
 
 /** \defgroup netloc_map_api Netloc Map API
- * \todo Brice Document this header
  * @{
  */
 
+/** A netloc map handle. */
 typedef void * netloc_map_t;
+/** A netloc map server handle. */
 typedef void * netloc_map_server_t;
+/** A netloc map port handle. */
 typedef void * netloc_map_port_t;
 
-/* creating a map */
+/** Creating a map. */
 NETLOC_DECLSPEC int netloc_map_create(netloc_map_t *map);
+
+/** Loading hwloc data from a directory into a map. */
 NETLOC_DECLSPEC int netloc_map_load_hwloc_data(netloc_map_t map, const char *data_dir);
+
+/** Loading netloc data from a directory into a map. */
 NETLOC_DECLSPEC int netloc_map_load_netloc_data(netloc_map_t map, const char *data_dir);
+
+/** Flags to be passed as a OR'ed set to netloc_map_build(). */
 enum netloc_map_build_flags_e {
-  NETLOC_MAP_BUILD_FLAG_COMPRESS_HWLOC = (1<<0)
+  NETLOC_MAP_BUILD_FLAG_COMPRESS_HWLOC = (1<<0) /**< Enable hwloc topology compression if supported. \hideinitializer */
 };
+
+/** Build a map that was previously created and where hwloc and netloc data were loaded. */
 NETLOC_DECLSPEC int netloc_map_build(netloc_map_t map, unsigned long flags);
-/* destroying a map (needed even if build() failed) */
+
+/** Destroy a map.
+ * \note Needed even if build() failed.
+ */
 NETLOC_DECLSPEC int netloc_map_destroy(netloc_map_t map);
 
-/* Returns the number of ports that are close to the hwloc topology and object.
+/** Returns the number of ports that are close to the hwloc topology and object.
+ *
  * On input, *nr specifies how many ports can be stored in *ports.
  * On output, *nr specifies how many were actually stored.
  *
@@ -54,21 +68,22 @@ NETLOC_DECLSPEC int netloc_map_hwloc2port(netloc_map_t map,
 					  hwloc_topology_t htopo, hwloc_obj_t hobj,
 					  netloc_map_port_t *ports, unsigned *nrp);
 
-/* Given a netloc edge and or node in a netloc topology,
- * return the corresponding port.
+/** Given a netloc edge and or node in a netloc topology, return the corresponding port.
  *
  * On input, one (and only one) of nedge and nnode may be NULL. If both are non-NULL, they should match.
  */
 NETLOC_DECLSPEC int netloc_map_netloc2port(netloc_map_t map,
 					   netloc_topology_t ntopo, netloc_node_t *nnode, netloc_edge_t *nedge,
 					   netloc_map_port_t *port);
-/* Return the netloc node+edge from a port.
+
+/** Return the netloc node+edge from a port.
  *
- * Some of nnode and nedgesmay be NULL if you don't care.
+ * Some of nnode and nedges may be NULL if you don't care.
  */
 NETLOC_DECLSPEC int netloc_map_port2netloc(netloc_map_port_t port,
 					   netloc_topology_t *ntopo, netloc_node_t **nnode, netloc_edge_t **nedge);
-/* Return the hwloc topology and object from a port.
+
+/** Return the hwloc topology and object from a port.
  *
  * hobjp may be NULL if you don't care.
  *
@@ -77,18 +92,20 @@ NETLOC_DECLSPEC int netloc_map_port2netloc(netloc_map_port_t port,
 NETLOC_DECLSPEC int netloc_map_port2hwloc(netloc_map_port_t port,
 					  hwloc_topology_t *htopop, hwloc_obj_t *hobjp);
 
-/* convert between a hwloc topology and a server.
+/** Convert between a hwloc topology and a server.
  *
  * A reference is taken on the topology, it should be released later with netloc_map_put_hwloc()
  */
 NETLOC_DECLSPEC int netloc_map_server2hwloc(netloc_map_server_t server, hwloc_topology_t *topology);
-/* convert from topology to server.
- * equivalent to hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName") as long as hwloc stored the server name in the topology.
- * server should not be freed by the caller
+
+/** Convert from topology to server.
+ *
+ * \note equivalent to hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName") as long as hwloc stored the server name in the topology.
+ * \note server should not be freed by the caller
  */
 NETLOC_DECLSPEC int netloc_map_hwloc2server(netloc_map_t map, hwloc_topology_t topology, netloc_map_server_t *server);
 
-/* release a hwloc topology pointer that we got above */
+/** Release a hwloc topology pointer that we got above */
 NETLOC_DECLSPEC int netloc_map_put_hwloc(netloc_map_t map, hwloc_topology_t topology);
 
 /* FIXME: uniformize the following get() calls:
@@ -98,80 +115,93 @@ NETLOC_DECLSPEC int netloc_map_put_hwloc(netloc_map_t map, hwloc_topology_t topo
  * - get_ports: the caller should not alloc/free anything (we return a copy of the internal array).
  */
 
-/* get an array of subnets from the map.
- * the caller should free the array, not its contents.
+/** Get an array of subnets from the map.
+ * \note the caller should free the array, not its contents.
  */
 NETLOC_DECLSPEC int netloc_map_get_subnets(netloc_map_t map, unsigned *nr, netloc_topology_t **topos);
 
-/* get the number of servers. */
+/** Get the number of servers. */
 NETLOC_DECLSPEC int netloc_map_get_nbservers(netloc_map_t map);
 
-/* fill the input array with a range of servers.
- * servers must be allocated (and freed) by the caller.
+/** fill the input array with a range of servers.
  *
- * this function is not performance-optimized, it may be slow
- * when first is high.
+ * \note Servers must be allocated (and freed) by the caller.
+ *
+ * \note This function is not performance-optimized, it may be slow when first is high.
  */
 NETLOC_DECLSPEC int netloc_map_get_servers(netloc_map_t map,
 					   unsigned first, unsigned nr,
 					   netloc_map_server_t servers[]);
 
-/* return the ports from the server.
- * the caller should not free the array.
+/** Return the ports from the server.
+ * \note The caller should not free the array.
  */
 NETLOC_DECLSPEC int netloc_map_get_server_ports(netloc_map_server_t server,
 						unsigned *nr, netloc_map_port_t **ports);
 
-/* return the server from a port */
+/** Return the server from a port */
 NETLOC_DECLSPEC int netloc_map_port2server(netloc_map_port_t port,
 					   netloc_map_server_t *server);
 
-/* return the map of a server */
+/** Return the map of a server */
 NETLOC_DECLSPEC int netloc_map_server2port(netloc_map_server_t server, netloc_map_t *map);
 
-/* return the name of a server */
+/** Return the name of a server */
 NETLOC_DECLSPEC int netloc_map_server2name(netloc_map_server_t server, const char **name);
 
-/* return the server from a name */
+/** Return the server from a name */
 NETLOC_DECLSPEC int netloc_map_name2server(netloc_map_t map,
 					   const char *name, netloc_map_server_t *server);
 
 
-
+/** A netloc map edge. */
 struct netloc_map_edge_s {
+  /** A netloc map edge type. */
   enum netloc_map_edge_type_e {
-    NETLOC_MAP_EDGE_TYPE_NETLOC,
-    NETLOC_MAP_EDGE_TYPE_HWLOC_PARENT,
-    NETLOC_MAP_EDGE_TYPE_HWLOC_HORIZONTAL,
-    NETLOC_MAP_EDGE_TYPE_HWLOC_CHILD,
-    NETLOC_MAP_EDGE_TYPE_HWLOC_PCI
+    NETLOC_MAP_EDGE_TYPE_NETLOC, /**< The edge is a regular network edge. */
+    NETLOC_MAP_EDGE_TYPE_HWLOC_PARENT, /**< The edge is a hwloc edge from child to parent. */
+    NETLOC_MAP_EDGE_TYPE_HWLOC_HORIZONTAL, /**< The edhe is a horizontal hwloc edge. */
+    NETLOC_MAP_EDGE_TYPE_HWLOC_CHILD, /**< The edge is a hwloc edge from parent to child. */
+    NETLOC_MAP_EDGE_TYPE_HWLOC_PCI /**< The edge is a hwloc edge between a PCI and a regular object. */
   } type;
   union {
     struct {
+      /** A regular network edge. */
       netloc_edge_t *edge;
+      /** The netloc topology corresponding to the edge. */
       netloc_topology_t topology;
     } netloc;
     struct {
+      /** The source object of a hwloc edge. */
       hwloc_obj_t src_obj;
+      /** The target object of a hwloc edge. */
       hwloc_obj_t dest_obj;
-      unsigned weight; /* 1 if there's a direct connection between them.
-			* Otherwise the amount of edges between them on the shortest path across the hwloc tree.
-			* Usually latency increases with this weigth while bandwidth decreases.
-			* For PCI, the weight usually includes an edge from a NUMA node to a hostbridge,
-			* some edges between PCI bridges/devices, and an edge from a PCI device to a OS device.
-			*/
+      /* The weigth of the hwloc edge.
+       *
+       * 1 if there's a direct connection between them.
+       * Otherwise the amount of edges between them on the shortest path across the hwloc tree.
+       * Usually latency increases with this weigth while bandwidth decreases.
+       * For PCI, the weight usually includes an edge from a NUMA node to a hostbridge,
+       * some edges between PCI bridges/devices, and an edge from a PCI device to a OS device.
+       */
+      unsigned weight;
     } hwloc;
   };
 };
 
-/* By default only horizontal hwloc edges are reported, for instance cross-NUMA links */
+/** Flags to be given as a OR'ed set to netloc_map_paths_build().
+ *
+ * \note By default only horizontal hwloc edges are reported, for instance cross-NUMA links.
+ */
 enum netloc_map_paths_flag_e {
-  NETLOC_MAP_PATHS_FLAG_IO = (1UL << 0), /* want edges between I/O objects such as PCI NICs and normal hwloc objects */
-  NETLOC_MAP_PATHS_FLAG_VERTICAL = (1UL << 1) /* want edges between normal hwloc object child and parent, for instance from a core to a NUMA node */
+  NETLOC_MAP_PATHS_FLAG_IO = (1UL << 0), /**< Want edges between I/O objects such as PCI NICs and normal hwloc objects */
+  NETLOC_MAP_PATHS_FLAG_VERTICAL = (1UL << 1) /**< Want edges between normal hwloc object child and parent, for instance from a core to a NUMA node */
 };
 
+/** A netloc map path handle. */
 typedef void * netloc_map_paths_t;
 
+/** Build the list of netloc map paths between two hwloc objects in two hwloc topologies. */
 /* FIXME: add an optional subnet */
 /* FIXME: make srcobj/dstobj optional. paths would only contain netloc edges. */
 NETLOC_DECLSPEC int netloc_map_paths_build(netloc_map_t map,
@@ -180,6 +210,7 @@ NETLOC_DECLSPEC int netloc_map_paths_build(netloc_map_t map,
 					   unsigned long flags,
 					   netloc_map_paths_t *paths, unsigned *nr);
 
+/** Get a single paths from a previously built netloc map paths handle. */
 /* FIXME: also return a subnet pointer.
  * would be NULL if we ever have path across multiple subnets with gateways */
 NETLOC_DECLSPEC int netloc_map_paths_get(netloc_map_paths_t paths, unsigned idx,
@@ -187,8 +218,8 @@ NETLOC_DECLSPEC int netloc_map_paths_get(netloc_map_paths_t paths, unsigned idx,
 
 /* FIXME: get the distance (minimal path length, using PCI/NUMA/Eth/IB values */ 
 
+/** Destroy a previously built netloc map paths handle. */
 NETLOC_DECLSPEC int netloc_map_paths_destroy(netloc_map_paths_t paths);
-
 
 /* FIXME: get neighbor nodes at a given distance, within any or a single subnet */
 /* FIXME: get neighbor nodes with enough cores, within any or a single subnet */
