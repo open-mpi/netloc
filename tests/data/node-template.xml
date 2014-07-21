@@ -4,7 +4,7 @@
   <object type="Machine" os_index="0" cpuset="0xffffffff" complete_cpuset="0xffffffff" online_cpuset="0xffffffff" allowed_cpuset="0xffffffff" nodeset="0x00000003" complete_nodeset="0x00000003" allowed_nodeset="0x00000003">
     <info name="Backend" value="Linux"/>
     <info name="OSName" value="Linux"/>
-    <info name="HostName" value="node03"/>
+    <info name="HostName" value="TEMPLATE_HOSTNAME"/>
     <info name="Architecture" value="x86_64"/>
     <object type="NUMANode" os_index="0" cpuset="0x55555555" complete_cpuset="0x55555555" online_cpuset="0x55555555" allowed_cpuset="0x55555555" nodeset="0x00000001" complete_nodeset="0x00000001" allowed_nodeset="0x00000001" local_memory="34278400000">
       <page_type size="4096" count="8368750"/>
@@ -64,7 +64,7 @@
             <info name="PCIVendor" value="Synthetic Inc"/>
             <info name="PCIDevice" value="Gigabit Ethernet PCIe"/>
             <object type="OSDev" name="eth0" osdev_type="2">
-              <info name="Address" value="00:00:00:00:00:03"/>
+              <info name="Address" value="TEMPLATE_MAC_ADDR"/>
             </object>
           </object>
         </object>
