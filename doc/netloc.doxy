@@ -66,14 +66,15 @@ accordingly and efficiently.
 The following networks are currently supported:
 
 <ul>
-<li>InfiniBand
-<li>OpenFlow-managed Ethernet newtworks. Below are the supported OpenFlow
-controllers:
+<li>InfiniBand (See \ref tools_reader_ib).
+<li>OpenFlow-managed Ethernet newtworks (See \ref tools_reader_of).
+Below are the supported OpenFlow controllers:
   <ul>
   <li><a href="http://www.cisco.com/c/en/us/products/cloud-systems-management/extensible-network-controller-xnc/index.html">Cisco XNC</a>
   <li><a href="http://www.projectfloodlight.org/floodlight/">Floodlight</a>
   <li><a href="http://www.opendaylight.org/">OpenDaylight</a>
   </ul>
+<li>Static (User Defined) (See \ref tools_reader_static).
 </ul>
 
 
@@ -484,6 +485,78 @@ for a complete list.
 <!-- ********************************************* -->
 
 \htmlonly
+</div><div class="section" id="tools_reader_static">
+\endhtmlonly
+\section tools_reader_static Reader: Static (User Defined)
+
+The \c netloc_reader_static tool processes data from a user supplied input
+file. This reader is useful for users on networks that do not (yet) have a
+netloc reader or, due to restricted access, the user cannot run the necessary
+reader. The format of the input file is specified below.
+
+<ul>
+ <li> \c netloc_reader_static : Static specification of the network topology information.
+</ul>
+
+\verbatim
+shell$ netloc_reader_static -i example-2-nodes.json -o netloc/
+  Input file       : example-2-nodes.json
+  Output Directory : ./
+Parsing the input file...
+        Processing: Network Information...
+        Processing: Node Information...
+        Processing: Edge Information...
+Status: Computing Physical Paths
+Status: Validating the output...
+        Number of hosts   :    2
+        Number of switches:    1
+        Number of edges   :    4
+shell$ 
+shell$  lsnettopo netloc/
+Network: ETH-unknown (version 1)
+  Type    : Ethernet
+  Subnet  : unknown
+  Hosts   :   2
+  Switches:   1
+---------------------------------------------------
+\endverbatim
+
+\subsection tools_reader_static_cli Command Line Interfaces (netloc_reader_static)
+
+There are a few command line options available. See <tt>netloc_reader_static --help</tt>
+for a complete list.
+
+\verbatim
+--input | -i <filename>
+   The JSON input file describing the network nodes and edges.
+
+--outdir | -o <output directory>       (Optional)
+   Path to directory where output .dat filess are placed by the tool.
+   Default: "./"
+
+--progress | -p
+   Show progress of processing node and edge information
+   Default: disabled
+
+--help | -h                            (Optional)
+   Display a help message.
+\endverbatim
+
+\subsection tools_reader_static_json JSON Format
+
+Below is the <a href="http://json-schema.org/">JSON schema</a> for the input file.
+
+\verbinclude "../tools/reader_static/netloc_reader_static_schema.json"
+
+Below is an example of the expected format of the JSON input file with two nodes and one swich.
+
+\verbinclude "../tools/reader_static/example-2-nodes.json"
+
+
+
+<!-- ********************************************* -->
+
+\htmlonly
 </div><div class="section" id="tools_reader_ib">
 \endhtmlonly
 \section tools_reader_ib Reader: InfiniBand
@@ -751,7 +824,302 @@ for a complete list.
 <!-- ********************************************* -->
 \page apireader Reader (Data Collection) API
 
-\todo JJH Complete the Data Collection API section of the documentation
+There are a series of steps that a developer will need to go through to create
+a new netloc reader. The basic steps are below.
+<ol start="0">
+  <li> Access the node and edge information from your network. The remainder of
+  this section assumes that you have this information and are trying to convert
+  it into netloc .ndat files.
+  <li> \ref apireader_phase1 :<br>
+  Setup the network information on the \ref netloc_network_t handle.
+  <li> \ref apireader_phase2 :<br>
+  Setup a data collection handle (\ref netloc_data_collection_handle_t)
+  associated with that network along with the output directory for the .ndat
+  files.
+  <li> \ref apireader_phase3 :<br>
+  Create a \ref netloc_node_t object for each addressable network endpoint
+  (e.g., MAC Address, GUID) in the system.
+  <li> \ref apireader_phase4 :<br>
+  Add the \ref netloc_node_t object to the collection.
+  <li> \ref apireader_phase5 :<br>
+  Create a \ref netloc_edge_t object for each unidirectional edge between
+  \ref netloc_node_t objects.
+  <li> \ref apireader_phase6 :<br>
+  Add the \ref netloc_edge_t object to the source \ref netloc_node_t
+  object.
+  <li> \ref apireader_phase7 :<br>
+  Compute the shortest physical paths between all nodes.
+  <li> \ref apireader_phase8 :<br>
+  Append logical paths between all nodes.
+  <li> \ref apireader_phase9 :<br>
+  Close the data collection handle to write the data to the .ndat files in
+  the specified output directory.
+</ol>
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase1">
+\endhtmlonly
+\section apireader_phase1 Setup Network Information
+
+The following interfaces are useful in setting up the network information.
+Note that the network information pertains to a single network type and subnet.
+they 
+<ul>
+ <li> \ref netloc_network_t : Network handle.
+ <li> \ref netloc_dt_network_t_construct : Constructor for the network handle.
+ <li> \ref netloc_dt_network_t_destruct : Destructor for the network handle.
+</ul>
+
+\code 
+    netloc_network_t *network = NULL;
+
+    network = netloc_dt_network_t_construct();
+
+    network->network_type = NETLOC_NETWORK_TYPE_ETHERNET;
+    network->subnet_id    = strdup("unknown");
+    network->version      = strdup("1");
+    network->description  = strdup("This is an example");
+    network->data_uri     = strdup("file://.");
+\endcode
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase2">
+\endhtmlonly
+\section apireader_phase2 Setup Data Collection Handle
+
+The following interfaces are useful in setting up the data collection handle
+and associating it with the network information.
+they 
+<ul>
+ <li> \ref netloc_data_collection_handle_t : Data Collection handle.
+ <li> \ref netloc_dc_create : Creates the handle and associates it with the
+ specified network.
+</ul>
+
+\code 
+    netloc_data_collection_handle_t *dc_handle = NULL;
+
+    dc_handle = netloc_dc_create(network, outdir);
+
+    // After which the network can be destructed
+    netloc_dt_network_t_destruct(network);
+    network = NULL;
+\endcode
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase3">
+\endhtmlonly
+\section apireader_phase3 Create netloc Nodes
+
+The following interfaces are useful in creating a \ref netloc_node_t for each
+addressable network endpoing (e.g., MAC address, GUID).
+they 
+<ul>
+ <li> \ref netloc_node_t : Node type.
+ <li> \ref netloc_dt_node_t_construct : Constructor for the node type.
+ <li> \ref netloc_dt_node_t_destruct : Destructor for the node type.
+ <li> \ref netloc_encode_node_type : Encode the node type (e.g., Switch, Host)
+</ul>
+
+\code 
+    netloc_node_t *node = NULL;
+
+    node = netloc_dt_node_t_construct();
+
+    // fill in the necessary fields. For example,
+    node->network_type = dc_handle->network->network_type;
+    node->subnet_id    = strdup(dc_handle->network->subnet_id);
+    node->node_type    = netloc_encode_node_type("CA")
+    node->logical_id   = strdup("10.0.0.2");
+    node->physical_id  = strdup("00:00:00:00:00:02");
+    node->description  = strdup("eth0 on node02")
+\endcode
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase4">
+\endhtmlonly
+\section apireader_phase4 Add the Node to the collection
+
+The following interfaces are useful in adding the \ref netloc_node_t object to
+the data collection.
+they 
+<ul>
+ <li> \ref netloc_dc_append_node : Append the neloc node to the collection.
+</ul>
+
+\code 
+    netloc_dc_append_node(dc_handle, node);
+
+    // You can destroy the node, since it is copied internally
+    netloc_dt_node_t_destruct(node);
+\endcode
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase5">
+\endhtmlonly
+\section apireader_phase5 Create edges between the nodes
+
+The following interfaces are useful in creating \ref netloc_edge_t objects
+representing the links between nodes.
+they 
+<ul>
+ <li> \ref netloc_edge_t : Netloc edge type.
+ <li> \ref netloc_dt_edge_t_construct : Edge constructor.
+</ul>
+
+\code 
+    netloc_edge_t *edge = NULL;
+
+    edge = netloc_dt_edge_t_construct();
+
+    // fill in the necessary fields. For example,
+    edge->src_node_id    = strdup(node->physical_id);
+    edge->src_node_type  = NETLOC_NODE_TYPE_HOST;
+    edge->src_port_id    = strdup("-1");
+
+    edge->dest_node_id   = strdup(dst_node->physical_id);
+    edge->dest_node_type = NETLOC_NODE_TYPE_SWITCH;
+    edge->dest_port_id   = strdup("5");
+
+    edge->speed          = strdup("100000");
+    edge->width          = strdup("1");
+    edge->description    = strdup("node02 to switch");
+\endcode
+
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase6">
+\endhtmlonly
+\section apireader_phase6 Add the edges to the collection
+
+The following interfaces are useful in adding the \ref netloc_edge_t objects to
+the data collection. Note that the edge is always associated with the source
+node.
+<ul>
+ <li> \ref netloc_dc_get_node_by_physical_id : Access a reference to the stored
+ \ref netloc_node_t object with the specified physical identifier.
+ <li> \ref netloc_dc_append_edge_to_node : Add the edge to the node in the data
+ collection.
+</ul>
+
+\code 
+    // You need the node reference of the source node to attach the edge.
+    // We always attach the edge to the source node which can always be
+    // accessed by its physical ID
+    node = netloc_dc_get_node_by_physical_id(dc_handle, "00:00:00:00:00:02");
+
+    // Now add the edge to the node on the handle
+    netloc_dc_append_edge_to_node(dc_handle, node, edge);
+
+    // You can destroy the edge, since it is copied internally
+    netloc_dt_edge_t_destruct(edge);
+\endcode
+
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase7">
+\endhtmlonly
+\section apireader_phase7 (Optional) Physical Paths
+
+The following interfaces are useful in constructing the physical path
+information between nodes. Note that all of the nodes and edges must be
+attached to the data collection handle before this will work.
+<ul>
+ <li> \ref netloc_dc_compute_path_between_nodes : Compute the physical paths
+ between the two nodes specified.
+ Final parameter is "false" indicating a physical path computation.
+ <li> \ref netloc_dc_append_path : Append a path between two nodes to the data
+ collection.
+ Final parameter is "false" indicating a physical path addition.
+</ul>
+
+\code 
+   netloc_node_t *cur_src_node = NULL;
+   netloc_node_t *cur_dst_node = NULL;
+   int num_edges = 0;
+   netloc_edge_t **edges = NULL;
+
+   // Access the node objects
+   cur_src_node = netloc_dc_get_node_by_physical_id(dc_handle, "00:00:00:00:00:01");
+   cur_dst_node = netloc_dc_get_node_by_physical_id(dc_handle, "00:00:00:00:00:02");
+
+   // Use the netloc library to compute the physical paths between nodes
+   netloc_dc_compute_path_between_nodes(dc_handle,
+                                        cur_src_node,
+                                        cur_dst_node,
+                                        &num_edges,
+                                        &edges,
+                                        false);
+
+    // Store the path on the data collection handle
+    netloc_dc_append_path(dc_handle,
+                          cur_src_node->physical_id,
+                          cur_dst_node->physical_id,
+                          num_edges,
+                          edges,
+                          false);
+
+    // Cleanup
+    num_edges = 0;
+    free(edges);
+    edges = NULL;
+\endcode
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase8">
+\endhtmlonly
+\section apireader_phase8 (Optional) Logical Paths
+
+The following interfaces are useful in constructing the logical path
+information between nodes.
+
+\todo JJH Logical paths have not been well tested.
+
+<ul>
+ <li> \ref netloc_dc_compute_path_between_nodes : Compute the physical paths
+ between the two nodes specified.
+ Final parameter is "ture" indicating a logical path computation.
+ <li> \ref netloc_dc_append_path : Append a path between two nodes to the data
+ collection.
+ Final parameter is "true" indicating a logical path addition.
+</ul>
+
+\code 
+    // TODO
+\endcode
+
+
+<!-- ********************************************* -->
+\htmlonly
+</div><div class="section" id="apireader_phase9">
+\endhtmlonly
+\section apireader_phase9 Close the data collection
+
+The following interfaces are useful in closing the data collection. This will
+write the data to the .ndat files in the directory specified on the data
+collection handle.
+<ul>
+ <li> \ref netloc_dc_close : Close the data collection and write out the netloc
+ .ndat files.
+</ul>
+
+\code 
+    // Close the data collection
+    netloc_dc_close(dc_handle);
+
+    // Cleanup the handle when we are finished with it.
+    netloc_dt_data_collection_handle_t_destruct(dc_handle);
+    dc_handle = NULL;
+\endcode
+
 
 <!-- ********************************************* -->
 <!-- ********************************************* -->

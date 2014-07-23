@@ -328,6 +328,7 @@ AC_CONFIG_FILES([
    tools/Makefile
    tools/reader_ib/Makefile
    tools/reader_of/Makefile
+   tools/reader_static/Makefile
    tools/lsnettopo/Makefile
    tools/gather_ib/Makefile
    tests/Makefile

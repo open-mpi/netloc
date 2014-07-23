@@ -82,7 +82,8 @@ struct netloc_data_collection_handle_t {
 
     /** JSON Object for nodes */
     json_t *node_data;
-    /** (Internal Use only) Accumulation object */
+    /** (Internal Use only) Accumulation object used to store JSON data while
+     *  the node lists are being built in \ref netloc_dc_append_node */
     json_t *node_data_acc;
 
     /** JSON Object for paths */
@@ -201,6 +202,9 @@ NETLOC_DECLSPEC int netloc_dc_append_node(netloc_data_collection_handle_t *handl
  * the user may reuse the edge, and is responsible for calling the edge destructor when
  * finished with it (\ref netloc_dt_edge_t_destruct).
  *
+ * \todo JJH It would be easy to allow the node parameter to be NULL and infer to node from the edge.
+ * \todo JJH Add a check to make sure we only add edges to the source node.
+ *
  * \param handle A valid pointer to a data collection handle
  * \param node   A valid pointer to a \ref netloc_node_t to append the edge to
  * \param edge   A valid pointer to the edge information to attach
@@ -209,6 +213,28 @@ NETLOC_DECLSPEC int netloc_dc_append_node(netloc_data_collection_handle_t *handl
  * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netloc_node_t *node, netloc_edge_t *edge);
+
+/**
+ * Append \ref netloc_edge_t information to the internal \ref netloc_node_t
+ * structure by using the physical ID of the node.
+ *
+ * Logically, this is similar to doing the following.
+ * \code
+   netloc_dc_append_edge_to_node(handle, netloc_dc_get_node_by_physical_id(handle, phy_id), edge);
+   \endcode
+ *
+ * This function makes a copy of the edge information before storing it on the node. So 
+ * the user may reuse the edge, and is responsible for calling the edge destructor when
+ * finished with it (\ref netloc_dt_edge_t_destruct).
+ *
+ * \param handle A valid pointer to a data collection handle
+ * \param phy_id The physical_id to search for
+ * \param edge   A valid pointer to the edge information to attach
+ *
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR otherwise
+ */
+NETLOC_DECLSPEC int netloc_dc_append_edge_to_node_by_id(netloc_data_collection_handle_t *handle, char * phy_id, netloc_edge_t *edge);
 
 /**
  * Access a stored node by the physcial identifier (e.g., MAC address, GUID)
@@ -244,7 +270,20 @@ NETLOC_DECLSPEC int netloc_dc_append_path(netloc_data_collection_handle_t *handl
                                           bool is_logical);
 
 /**
- * \todo JJH document this interface
+ * Compute the path between two nodes
+ *
+ * \warning Logical paths is known not to be fully implemented/tested.
+ *
+ * \param handle A valid point to a data collection handle
+ * \param src_node A reference to the source node to compute the path from
+ * \param dest_node A reference to the destination node to compute the path to
+ * \param num_edges The number of edges in the edges array
+ * \param edges An ordered list of edges from the source node to the destination node.
+ * \param is_logical If the path is a logical or physical path
+ *
+ * \returns NETLOC_SUCCESS upon success
+ * \returns NETLOC_ERROR_NOT_IMPL if is_logical is true
+ * \returns NETLOC_ERROR otherwise
  */
 NETLOC_DECLSPEC int netloc_dc_compute_path_between_nodes(netloc_data_collection_handle_t *handle,
                                                          netloc_node_t *src_node,

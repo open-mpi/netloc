@@ -258,12 +258,14 @@ int netloc_lookup_table_init(struct netloc_dt_lookup_table *ht, size_t size, uns
 int netloc_lookup_table_destroy(struct netloc_dt_lookup_table *ht)
 {
     size_t i;
-    int dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
+    int dup;
 
     if( NULL == ht ) {
         fprintf(stderr, "Error: Hash Table handle is NULL!\n");
         return NETLOC_ERROR;
     }
+
+    dup = !(ht->flags & NETLOC_LOOKUP_TABLE_FLAG_NO_STRDUP_KEY);
 
     for(i = 0; i < ht->ht_size; ++i) {
         if( NULL != ht->ht_entries[i] ) {

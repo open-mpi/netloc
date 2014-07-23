@@ -126,7 +126,7 @@ static inline const char * netloc_decode_network_type_readable(netloc_network_ty
  */
 typedef enum {
     NETLOC_NODE_TYPE_SWITCH  = 1, /**< Switch node */
-    NETLOC_NODE_TYPE_HOST    = 2, /**< Host (a.k.a., machine) node */
+    NETLOC_NODE_TYPE_HOST    = 2, /**< Host (a.k.a., network addressable endpoint - e.g., MAC Address) node */
     NETLOC_NODE_TYPE_INVALID = 3  /**< Invalid node */
 } netloc_node_type_t;
 

@@ -75,6 +75,12 @@ int netloc_dc_compute_path_between_nodes(netloc_data_collection_handle_t *handle
         goto cleanup;
     }
 
+    if( is_logical ) {
+        fprintf(stderr, "Error: Logical Pathfinding not supported\n");
+        exit_status = NETLOC_ERROR_NOT_IMPL;
+        goto cleanup;
+    }
+
     /*
      * Calculate path between these two nodes
      */

@@ -393,9 +393,16 @@ int netloc_dc_append_node(netloc_data_collection_handle_t *handle, netloc_node_t
     cur_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
 
     if( NULL != cur_node ) {
-        // JJH: We should be able to use 'replace' instead of 'remove' and 'append'
-        //      Need to double check ordering.
-        netloc_lookup_table_remove_with_int(handle->node_list, key, key_int);
+        if( NETLOC_NODE_TYPE_INVALID == cur_node->node_type ) {
+            // JJH: We should be able to use 'replace' instead of 'remove' and 'append'
+            //      Need to double check ordering.
+            netloc_lookup_table_remove_with_int(handle->node_list, key, key_int);
+        } else {
+            fprintf(stderr, "Warning: A version of this node has already been added to the data set!\n");
+            fprintf(stderr, "Warning: Support for updating nodes is not yet available\n");
+            // JJH: Delete the old cached version ? replace it?
+            //json_object_del(handle->node_data_acc, node->physical_id);
+        }
     }
     free(key);
     key = NULL;
@@ -431,6 +438,15 @@ int netloc_dc_append_node(netloc_data_collection_handle_t *handle, netloc_node_t
          */
         json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
     }
+    else {
+        /*
+         * Replace the node?
+         * The code below will fix the cache (node_data_acc), but the handle->node_list needs to also be updated.
+         */
+        //json_object_del(handle->node_data_acc, node->physical_id);
+        //json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
+        return NETLOC_ERROR_NOT_IMPL;
+    }
 
     return NETLOC_SUCCESS;
 }
@@ -441,6 +457,7 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
     netloc_edge_t *found_edge = NULL;
     netloc_node_t *found_node = NULL;
     unsigned long key_int;
+    bool is_cached = false;
 
     /*
      * Setup the table for the first edge
@@ -483,6 +500,9 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
      * Update the edge links
      * if the node endpoint is not in the list, then add a stub
      */
+    if( NULL == edge->src_node_id ) {
+        return NETLOC_ERROR_NOT_FOUND;
+    }
     SUPPORT_CONVERT_ADDR_TO_INT(edge->src_node_id, handle->network->network_type, key_int);
     asprintf(&key, "%s", edge->src_node_id);
     found_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
@@ -495,11 +515,16 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
         found_node->node_type = NETLOC_NODE_TYPE_INVALID;
 
         netloc_lookup_table_append_with_int(handle->node_list, key, key_int, found_node);
+    } else {
+        is_cached = true;
     }
     found_edge->src_node = found_node;
     free(key);
     key = NULL;
 
+    if( NULL == edge->dest_node_id ) {
+        return NETLOC_ERROR_NOT_FOUND;
+    }
     asprintf(&key, "%s", edge->dest_node_id);
     SUPPORT_CONVERT_ADDR_TO_INT(edge->dest_node_id, handle->network->network_type, key_int);
     found_node = netloc_lookup_table_access_with_int(handle->node_list, key, key_int);
@@ -518,7 +543,7 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
     key = NULL;
 
     /*
-     * Add the edge index to the node
+     * Add the edge index to the node passed to us
      */
     node->num_edge_ids++;
     node->edge_ids = (int*)realloc(node->edge_ids, sizeof(int) * node->num_edge_ids);
@@ -527,6 +552,14 @@ int netloc_dc_append_edge_to_node(netloc_data_collection_handle_t *handle, netlo
     node->num_edges++;
     node->edges = (netloc_edge_t**)realloc(node->edges, sizeof(netloc_edge_t*) * node->num_edges);
     node->edges[node->num_edges -1] = found_edge;
+
+    /*
+     * Update the cached version of this node
+     */
+    if( is_cached ) {
+        json_object_del(handle->node_data_acc, node->physical_id);
+        json_object_set_new(handle->node_data_acc, node->physical_id, netloc_dt_node_t_json_encode(node));
+    }
 
     return NETLOC_SUCCESS;
 }
@@ -599,6 +632,19 @@ int netloc_dc_append_path(netloc_data_collection_handle_t *handle,
 
     return NETLOC_SUCCESS;
 }
+
+int netloc_dc_append_edge_to_node_by_id(netloc_data_collection_handle_t *handle, char * phy_id, netloc_edge_t *edge)
+{
+    netloc_node_t *node = NULL;
+
+    node = netloc_dc_get_node_by_physical_id(handle, phy_id);
+    if( NULL == node ) {
+        return NETLOC_ERROR_NOT_FOUND;
+    }
+
+    return netloc_dc_append_edge_to_node(handle, node, edge);
+}
+
 
 netloc_node_t * netloc_dc_get_node_by_physical_id(netloc_data_collection_handle_t *handle, char * phy_id)
 {

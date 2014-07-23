@@ -44,17 +44,16 @@ test-suite.log
 /tools/gather_ib/netloc_ib_extract_dats
 /tools/gather_ib/netloc_ib_gather_raw
 /tools/lsnettopo/lsnettopo
-/tools/lsnettopo/lsnettopo.o
 /tools/reader_ib/Perl_IB_support.pm
 /tools/reader_ib/netloc_reader_ib
-/tools/reader_ib/netloc_reader_ib.o
 /tools/reader_ib/netloc_reader_ib_backend_general
 /tools/reader_ib/netloc_reader_ib_backend_log_prep
 /tools/reader_of/Perl_OF_support.pm
 /tools/reader_of/netloc_reader_of
-/tools/reader_of/netloc_reader_of.o
 /tools/reader_of/netloc_reader_of_floodlight
 /tools/reader_of/netloc_reader_of_opendaylight
+/tools/reader_static/netloc_reader_static
+/tools/**/*.o
 
 /tests/hwloc_compress
 /tests/lsmap

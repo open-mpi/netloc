@@ -11,5 +11,6 @@ SUBDIRS = \
 	lsnettopo \
 	reader_ib \
 	reader_of \
+	reader_static \
 	gather_ib
 
