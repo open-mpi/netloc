@@ -11,6 +11,8 @@ AM_CPPFLAGS = \
         -I$(top_builddir)/include \
         -I$(top_srcdir)/include \
         -I$(top_srcdir) \
+        -I$(top_srcdir)/jansson/src \
+        -I$(top_builddir)/jansson/src \
         -DNETLOC_ABS_TOP_SRCDIR=\"$(abs_top_srcdir)/\"
 
 check_PROGRAMS = \
