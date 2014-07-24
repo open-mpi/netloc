@@ -126,6 +126,8 @@ b = m.at(a);]])
 #
 m4_include([jansson/jansson.m4])
 JANSSON_CONFIG
+JANSSON_CPPFLAGS='-I$(top_srcdir)/jansson/src -I$(top_builddir)/jansson/src'
+AC_SUBST(JANSSON_CPPFLAGS)
 
 #
 # Check for compiler attributes and visibility

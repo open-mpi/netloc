@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2013-2014 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2013-2014 University of Wisconsin-La Crosse.
 #                         All rights reserved.
 #
@@ -8,11 +8,10 @@
 #
 
 AM_CPPFLAGS = \
+        $(JANSSON_CPPFLAGS) \
         -I$(top_builddir)/include \
         -I$(top_srcdir)/include \
         -I$(top_srcdir) \
-        -I$(top_srcdir)/jansson/src \
-        -I$(top_builddir)/jansson/src \
         -DNETLOC_ABS_TOP_SRCDIR=\"$(abs_top_srcdir)/\"
 
 check_PROGRAMS = \

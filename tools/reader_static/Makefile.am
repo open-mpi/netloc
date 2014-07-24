@@ -8,11 +8,10 @@
 #
 
 AM_CPPFLAGS = \
+        $(JANSSON_CPPFLAGS) \
         -I$(top_builddir)/include \
         -I$(top_srcdir)/include \
-        -I$(top_srcdir) \
-        -I$(top_srcdir)/jansson/src \
-        -I$(top_builddir)/jansson/src
+        -I$(top_srcdir)
 
 bin_PROGRAMS = \
 	netloc_reader_static
