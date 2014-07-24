@@ -11,7 +11,7 @@
  */
 
 #include "netloc.h"
-#include "src/support.h"
+#include "private/netloc.h"
 
 #include <stdlib.h>
 
