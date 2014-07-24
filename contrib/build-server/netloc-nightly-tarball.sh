@@ -65,7 +65,7 @@ for branch in $branches; do
 
     module load "autotools/netloc-$branch"
     base=/u/mpiteam/netloc/nightly-tarball-build-root
-    export NETLOC_CONFIGURE_FLAGS="--with-jansson=$base/jansson-2.4/local --with-hwloc=$base/hwloc-1.7.2/local"
+    export NETLOC_CONFIGURE_FLAGS="--with-jansson=$base/jansson-2.6/local --with-hwloc=$base/hwloc-1.7.2/local"
     export DISTCHECK_CONFIGURE_FLAGS=$NETLOC_CONFIGURE_FLAGS
 
     ./$script \
