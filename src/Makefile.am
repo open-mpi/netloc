@@ -9,7 +9,9 @@
 
 AM_CPPFLAGS = \
         -I$(top_builddir)/include \
-        -I$(top_srcdir)/include
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/jansson/src \
+        -I$(top_builddir)/jansson/src
 
 lib_LTLIBRARIES = libnetloc.la
 
@@ -27,4 +29,4 @@ libnetloc_la_SOURCES = \
         map.c
 
 libnetloc_la_LIBADD = \
-        -lhwloc
+        -lhwloc $(top_builddir)/jansson/src/libjansson.la

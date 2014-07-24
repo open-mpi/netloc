@@ -10,7 +10,9 @@
 AM_CPPFLAGS = \
         -I$(top_builddir)/include \
         -I$(top_srcdir)/include \
-        -I$(top_srcdir)
+        -I$(top_srcdir) \
+        -I$(top_srcdir)/jansson/src \
+        -I$(top_builddir)/jansson/src
 
 bin_PROGRAMS = \
 	netloc_reader_of

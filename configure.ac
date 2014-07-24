@@ -117,61 +117,15 @@ b = m.at(a);]])
     AC_MSG_ERROR([Cannot continue])
    ])
 
-
 #
-# Ensure that we have the Jansson Library (Parsing JSON)
-# http://www.digip.org/jansson/
+# Setup Jansson
 #
-AC_ARG_WITH([jansson],
-     AC_HELP_STRING([--with-jansson=DIR],
-                    [Specify the prefix of your jansson installation]))
-
-# Basic sanity check on the --with-jansson value
-AC_MSG_CHECKING([with --with-jansson])
-AS_IF([test "$with_jansson" = "no"], 
-      [AC_MSG_RESULT([bad])
-       AC_MSG_WARN([You cannot specify --without-jansson])
-       AC_MSG_ERROR([Cannot conntinue])
-      ])
-AS_IF([test "$with_jansson" = "yes" -o -z "$with_jansson"],
-      [AC_MSG_RESULT([ok (unspecified)])
-       LIBS="$LIBS -ljansson"
-      ],
-      [AS_IF([test -f "$with_jansson/include/jansson.h"],
-             [AC_MSG_RESULT([good ($with_jansson)])
-              CPPFLAGS="$CPPFLAGS -I$with_jansson/include"
-              LDFLAGS="$LDFLAGS -L$with_jansson/lib"
-              LIBS="$LIBS -ljansson"],
-             [AC_MSG_RESULT([bad ($with_jansson)])
-              AC_MSG_WARN([$with_jansson/include/jansson.h not found])
-              AC_MSG_ERROR([Cannot continue])])
-      ])
-
-AC_CHECK_HEADER([jansson.h], [:],
-      [AC_MSG_WARN([Cannot find jansson.h])
-       AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some CPPFLAGS?])
-       AC_MSG_ERROR([Cannot continue])])
-
-AC_CHECK_LIB([jansson], [json_true], [:],
-      [AC_MSG_WARN([Cannot find libjansson])
-       AC_MSG_WARN([Perhaps you need to specify --with-jansson, or some LDFLAGS?])
-       AC_MSG_ERROR([Cannot continue])])
-
-AC_MSG_CHECKING([for Jansson version >= 2.3])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <jansson.h>]],
-      [[
-#if JANSSON_MAJOR_VERSION < 2
-#error "Jansson major version is too old"
-#endif
-#if JANSSON_MAJOR_VERSION == 2 && JANSSON_MINOR_VERSION < 3
-#error "Jansson minor version is too old"
-#endif
-      ]])],
-      [AC_MSG_RESULT([good])],
-      [AC_MSG_RESULT([bad])
-       AC_MSG_WARN([Version of Jansson is too old.])
-       AC_MSG_WARN([We require version 2.3 or later.])
-       AC_MSG_ERROR([Cannot continue])])
+# For the moment, we can only build with the internal Jansson.  It may
+# be useful to also add the ability to build with an external Jansson,
+# too.
+#
+m4_include([jansson/jansson.m4])
+JANSSON_CONFIG
 
 #
 # Check for compiler attributes and visibility

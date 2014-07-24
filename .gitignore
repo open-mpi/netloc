@@ -53,6 +53,7 @@ test-suite.log
 /tools/reader_of/netloc_reader_of_floodlight
 /tools/reader_of/netloc_reader_of_opendaylight
 /tools/reader_static/netloc_reader_static
+/tools/reader_static/*.ndat
 /tools/**/*.o
 
 /tests/hwloc_compress
@@ -73,3 +74,9 @@ test-suite.log
 
 /doc/doxygen-config.cfg
 /doc/doxygen-doc/
+/tests/test_conv.o
+/tests/test_conv.o
+
+/jansson/config.h
+/jansson/src/jansson_config.h
+/jansson/stamp-h?

@@ -11,7 +11,7 @@
 # via AC_CONFIG_MACRO_DIR in configure.ac.
 ACLOCAL_AMFLAGS = -Iconfig
 
-SUBDIRS = include src tools tests
+SUBDIRS = jansson include src tools tests
 
 EXTRA_DIST = \
         config/netloc_get_version.sh \
