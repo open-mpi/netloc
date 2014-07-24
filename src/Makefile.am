@@ -29,4 +29,4 @@ libnetloc_la_SOURCES = \
 
 libnetloc_la_LDFLAGS = $(JANSSON_LDFLAGS)
 libnetloc_la_LIBADD = \
-        -lhwloc $(JANSSON_LIB) $(top_builddir)/jansson/src/libjansson.la
+        -lhwloc $(JANSSON_LIBS)
