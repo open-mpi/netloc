@@ -126,8 +126,16 @@ b = m.at(a);]])
 #
 m4_include([jansson/jansson.m4])
 JANSSON_CONFIG
+
+# Set a few flags that are used in various Makefile.am's to
+# compile/link against Jansson.
 JANSSON_CPPFLAGS='-I$(top_srcdir)/jansson/src -I$(top_builddir)/jansson/src'
 AC_SUBST(JANSSON_CPPFLAGS)
+# For the embedded Jansson, we don't need any LDFLAGS
+JANSSON_LDFLAGS=
+AC_SUBST(JANSSON_LDFLAGS)
+JANSSON_LIBS='$(top_builddir)/jansson/src/libjansson.la'
+AC_SUBST(JANSSON_LIBS)
 
 #
 # Check for compiler attributes and visibility
