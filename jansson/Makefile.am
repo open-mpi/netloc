@@ -1,4 +1,6 @@
-EXTRA_DIST = CHANGES LICENSE README.rst win32 CMakeLists.txt cmake
+# NETLOC: remove win32 and cmake from EXTRA_DIST
+#EXTRA_DIST = CHANGES LICENSE README.rst win32 CMakeLists.txt cmake
+EXTRA_DIST = CHANGES LICENSE README.rst CMakeLists.txt
 # NETLOC: We don't care about building the doc or test subdirs
 #SUBDIRS = doc src test
 SUBDIRS = src
