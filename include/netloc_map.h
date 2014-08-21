@@ -22,16 +22,31 @@ extern "C" {
 }
 #endif
 
-/** \defgroup netloc_map_api Netloc Map API
+
+
+/** \defgroup netloc_map_api_main Netloc Map API - Main objects.
  * @{
  */
 
-/** A netloc map handle. */
+/** A netloc map handle.
+ * A map contains servers interconnected by networks.
+ */
 typedef void * netloc_map_t;
+
 /** A netloc map server handle. */
 typedef void * netloc_map_server_t;
-/** A netloc map port handle. */
+/** A netloc map port handle.
+ * Servers are interconnected by their ports.
+ */
 typedef void * netloc_map_port_t;
+
+/** @} */
+
+
+
+/** \defgroup netloc_map_api_map Netloc Map API - Building maps.
+ * @{
+ */
 
 /**
  * Create a map
@@ -100,6 +115,14 @@ NETLOC_DECLSPEC int netloc_map_build(netloc_map_t map, unsigned long flags);
  * \returns 0 on success
  */
 NETLOC_DECLSPEC int netloc_map_destroy(netloc_map_t map);
+
+/** @} */
+
+
+
+/** \defgroup netloc_map_api_servers_ports Netloc Map API - Manipulating servers and ports
+ * @{
+ */
 
 /**
  * Returns map ports that are close to a hwloc topology and object.
@@ -175,7 +198,7 @@ NETLOC_DECLSPEC int netloc_map_port2hwloc(netloc_map_port_t port,
 					  hwloc_topology_t *htopop, hwloc_obj_t *hobjp);
 
 /**
- * Return the hwloc topolog from a map server.
+ * Return the hwloc topology from a map server.
  *
  * \param port A map server.
  * \param htopop The corresponding hwloc topology is returned on success.
@@ -330,6 +353,13 @@ NETLOC_DECLSPEC int netloc_map_server2name(netloc_map_server_t server, const cha
 NETLOC_DECLSPEC int netloc_map_name2server(netloc_map_t map,
 					   const char *name, netloc_map_server_t *server);
 
+/** @} */
+
+
+
+/** \defgroup netloc_map_api_paths Netloc Map API - Finding paths within a map
+ * @{
+ */
 
 /** A netloc map edge. */
 struct netloc_map_edge_s {
@@ -433,6 +463,14 @@ NETLOC_DECLSPEC int netloc_map_paths_get(netloc_map_paths_t paths, unsigned idx,
  */
 NETLOC_DECLSPEC int netloc_map_paths_destroy(netloc_map_paths_t paths);
 
+/** @} */
+
+
+
+/** \defgroup netloc_map_api_misc Netloc Map API - Misc
+ * @{
+ */
+
 /**
  * Find the neighbors of the specified node out to a given depth in the network.
  *
@@ -464,6 +502,8 @@ NETLOC_DECLSPEC int netloc_map_dump(netloc_map_t map);
 #endif
 
 /** @} */
+
+
 
 /*
  * Ideas
