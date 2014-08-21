@@ -139,10 +139,10 @@ NETLOC_DECLSPEC int netloc_map_server2hwloc(netloc_map_server_t server, hwloc_to
 /**
  * Convert from a hwloc topology to server object.
  *
- * \note Equivalent to hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName") 
- * as long as hwloc stored the server name in the topology.
- * \note Server should not be freed by the caller
+ * The topology must have been previously obtained from this netloc map.
+ * It cannot be another topology loaded by another piece of software.
  *
+ * \note Server should not be freed by the caller
  */
 NETLOC_DECLSPEC int netloc_map_hwloc2server(netloc_map_t map, hwloc_topology_t topology, netloc_map_server_t *server);
 

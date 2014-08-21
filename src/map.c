@@ -322,7 +322,7 @@ netloc_map__init_server(struct netloc_map *map, hwloc_topology_t topo, const cha
     size_t namelen;
     int err;
 
-    /* we need a "HostName" info attr in the topology to recognize the server from the topology pointer */
+    /* setup a "HostName" info attr in the topology to recognize the name from the topology */
     obj = hwloc_get_root_obj(topo);
     assert(obj);
     infoname = hwloc_obj_get_info_by_name(obj, "HostName");
@@ -338,6 +338,9 @@ netloc_map__init_server(struct netloc_map *map, hwloc_topology_t topo, const cha
 
     strcpy(server->name, name);
     server->topology = topo;
+#if HWLOC_API_VERSION >= 0x10a00
+    hwloc_topology_set_userdata(topo, server);
+#endif
 
     if (netloc_lookup_table_access(&map->server_by_name, server->name)) {
         fprintf(stderr, "Found duplicate server %s, ignoring the new one\n", server->name);
@@ -769,13 +772,15 @@ netloc_map__get_server_by_name(struct netloc_map *map,
 }
 
 static struct netloc_map__server *
-netloc_map__get_server_by_topology(struct netloc_map *map,
+netloc_map__get_server_by_topology(struct netloc_map *map __netloc_attribute_unused,
                                    hwloc_topology_t topology)
 {
-    hwloc_obj_t root = hwloc_get_root_obj(topology);
-    const char *infoname = hwloc_obj_get_info_by_name(root, "HostName");
-    assert(infoname);
-    return netloc_map__get_server_by_name(map, infoname);
+#if HWLOC_API_VERSION >= 0x10a00
+    return hwloc_topology_get_userdata(topology);
+#else
+    const char *name = hwloc_obj_get_info_by_name(hwloc_get_root_obj(topology), "HostName");
+    return name ? netloc_map__get_server_by_name(map, name) : NULL;
+#endif
 }
 
 static struct netloc_map__subnet *
