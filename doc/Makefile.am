@@ -127,7 +127,11 @@ dist_man3_MANS = \
         $(DOX_MAN_DIR)/man3/netloc_api.3 \
         $(DOX_MAN_DIR)/man3/netloc_attach.3 \
         $(DOX_MAN_DIR)/man3/netloc_dc_api.3 \
-        $(DOX_MAN_DIR)/man3/netloc_map_api.3
+        $(DOX_MAN_DIR)/man3/netloc_map_api_main.3 \
+        $(DOX_MAN_DIR)/man3/netloc_map_api_map.3 \
+        $(DOX_MAN_DIR)/man3/netloc_map_api_servers_ports.3 \
+        $(DOX_MAN_DIR)/man3/netloc_map_api_paths.3 \
+        $(DOX_MAN_DIR)/man3/netloc_map_api_misc.3
 
 endif
 
